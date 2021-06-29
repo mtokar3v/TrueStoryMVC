@@ -1,0 +1,21 @@
+﻿@model IEnumerable<TrueStoryMVC.Models.Post>
+
+<a asp-action="Add">Новый пост</a>
+<table class="table">
+    <tr><td>Заголовок</td><td>Текст</td></tr>
+    @foreach (var item in Model)
+    {
+<tr>
+    <td>@item.Header</td>
+    <td>@item.Text</td>
+    @if (item.Image != null)
+    {
+        <td><img style='width:80px; height:60px;' src="data:image/jpeg/png/jpg ;base64,@(Convert.ToBase64String(item.Image))" /></td>
+    }
+    else
+    {
+        <td><p>NULL</p></td>
+    }
+</tr>
+    }
+</table>
