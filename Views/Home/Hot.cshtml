@@ -1,21 +1,30 @@
 ﻿@model IEnumerable<TrueStoryMVC.Models.Post>
 
 <a asp-action="Add">Новый пост</a>
-<table class="table">
-    <tr><td>Заголовок</td><td>Текст</td></tr>
-    @foreach (var item in Model)
+<div>
+    @foreach (Post item in Model)
     {
-<tr>
-    <td>@item.Header</td>
-    <td>@item.Text</td>
-    @if (item.Image != null)
-    {
-        <td><img style='width:80px; height:60px;' src="data:image/jpeg/png/jpg ;base64,@(Convert.ToBase64String(item.Image))" /></td>
+    <div class="container">
+        <h2 class="row">@item.Header</h2>
+        <p class="row">@item.Text</p>
+
+        @{
+            if (item.PostImages.Count != 0)
+            {
+                <p>всего картинок: @item.PostImages.Count</p>
+                foreach (ImageInfo img in item.PostImages)
+                {
+                    <div class="row"><img src="data:image/jpeg ;base64,@(Convert.ToBase64String(img.Data))" /></div>
+                }
+            }
+            else
+            {
+                <p>null</p>
+            }
+         }
+        <div>
+            <a asp-controller="Home" asp-action="Delete" asp-route-id="@item.PostId"> Удалить</a>
+        </div>
+    </div>
     }
-    else
-    {
-        <td><p>NULL</p></td>
-    }
-</tr>
-    }
-</table>
+</div>

@@ -5,9 +5,15 @@ namespace TrueStoryMVC.Models
     public class ApplicationContext: DbContext
     {
         public DbSet<Post> Posts { get; set; }
+        public DbSet<ImageInfo> Images { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
-            Database.EnsureCreated();
+           // Database.EnsureDeleted();
+           // Database.EnsureCreated();
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=tsdb;Trusted_Connection=True;");
         }
     }
 }

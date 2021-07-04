@@ -1,0 +1,8 @@
+﻿@model IEnumerable<TrueStoryMVC.Models.ImageInfo>
+
+@{ 
+    foreach(var i in Model)
+    {
+    <div class="row"><img src="data:image/jpeg ;base64,@(Convert.ToBase64String(i.Data))" /></div>
+    }
+}
