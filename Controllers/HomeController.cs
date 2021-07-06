@@ -40,6 +40,9 @@ namespace TrueStoryMVC.Controllers
             {
                 foreach (IFormFile formFile in pvm.Image)
                 {
+                    //мне эта часть не нравится:
+                    // 1) приходится открывать два потока, с одним не работает, так как b.save() плохо работает и не перезаписывает байты (по моему мнению)
+                    // 2) чтобы считать с формы, я сначала из возвращаемого потока stream(метод openreadstream) создаю массив байт, после чего из него создаю поток memorystream
                     byte[] bytes = new byte[formFile.Length];
                     formFile.OpenReadStream().Read(bytes, 0, (int)formFile.Length);
                     using (var reader = new MemoryStream(bytes))
@@ -50,17 +53,18 @@ namespace TrueStoryMVC.Controllers
                             int w = image.Width;
                             int h = image.Height;
 
-                           // int k = h / w;
-                            w /=200;
-                            h /=200;
+                            double k = (double)h / w;
+                            w = 600;
+                            h = (int)(w * k);
 
                             using (Bitmap b = new Bitmap(image, w, h))
                             {
-                                /*значит, дело такое, поток нужно почистить или создать заново*/
-                                var reader2 = new MemoryStream();
-                                b.Save(reader2, System.Drawing.Imaging.ImageFormat.Jpeg);
-                                bytes = new byte[reader2.ToArray().Length];
-                                bytes = reader2.ToArray();
+                                using (var reader2 = new MemoryStream())
+                                {
+                                    b.Save(reader2, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                    bytes = new byte[reader2.ToArray().Length];
+                                    bytes = reader2.ToArray();
+                                }
                             }
 
                             ImageInfo img = new ImageInfo()
