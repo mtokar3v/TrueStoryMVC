@@ -7,9 +7,10 @@ namespace TrueStoryMVC.Models
 {
     public class ImageInfo
     {
-        public int ImageInfoId { get; set; }
+        public int Id { get; set; }
         public int Height { get; set; }
         public int Width { get; set; }
         public byte[] Data { get; set; }
+        public int PostId { get; set; }
     }
 }

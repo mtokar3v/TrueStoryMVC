@@ -31,52 +31,54 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(PostModel pvm)
         {
-            Post post = new Post
-            {
-                Header = pvm.Header,  
-            };
-
-            if (!String.IsNullOrEmpty(pvm.Text))
-                post.Text = pvm.Text;
+            Post post = new Post{Header = pvm.Header};
+            if (!String.IsNullOrEmpty(pvm.Text)) post.Text = pvm.Text;
+            db.Posts.Add(post);
+            await db.SaveChangesAsync();
 
             if (pvm.Image != null)
             {
                 foreach (IFormFile formFile in pvm.Image)
                 {
                     byte[] bytes = new byte[formFile.Length];
-
-                    using (Stream reader = formFile.OpenReadStream())
+                    formFile.OpenReadStream().Read(bytes, 0, (int)formFile.Length);
+                    using (var reader = new MemoryStream(bytes))
                     {
-                        //если что эта часть нужна для дальнейшей работы с изображением (изменение размера, удаления метаданных и тд)
                         using (Image image = Image.FromStream(reader))
                         {
 
                             int w = image.Width;
                             int h = image.Height;
 
-                            using (Bitmap b = new Bitmap(image, new Size(w, h)))
+                           // int k = h / w;
+                            w /=200;
+                            h /=200;
+
+                            using (Bitmap b = new Bitmap(image, w, h))
                             {
-                                b.Save(reader, System.Drawing.Imaging.ImageFormat.Jpeg);
-                                await reader.ReadAsync(bytes,0, (int)formFile.Length);
+                                /*значит, дело такое, поток нужно почистить или создать заново*/
+                                var reader2 = new MemoryStream();
+                                b.Save(reader2, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                bytes = new byte[reader2.ToArray().Length];
+                                bytes = reader2.ToArray();
                             }
 
                             ImageInfo img = new ImageInfo()
                             {
                                 Data = bytes,
                                 Width = w,
-                                Height = h       
+                                Height = h,
+                                PostId = post.Id
                             };
-                            
+
                             db.Images.Add(img);
-                            post.PostImages.Add(img);
-                            
                         }
-                    }
+                }
                 }
             }
-            //на этом этапе все правильно добавляется (как в бд, так и в модель)
-            db.Posts.Add(post);
             await db.SaveChangesAsync();
+
+            Post post1 = db.Posts.First();
             return RedirectToAction("Hot");
         }
 
@@ -84,7 +86,7 @@ namespace TrueStoryMVC.Controllers
         {
             if(id!=null)
             {
-                Post post = await db.Posts.FirstOrDefaultAsync(p => p.PostId == id);
+                Post post = await db.Posts.FirstOrDefaultAsync(p => p.Id == id);
                 if (post != null)
                 {
                     db.Posts.Remove(post);
@@ -98,14 +100,8 @@ namespace TrueStoryMVC.Controllers
 
         public async Task<IActionResult> Hot()
         {
-            List<Post> list = db.Posts.ToList();
-            foreach(var i in list)
-            {
-                foreach(var t in i.PostImages)
-                {
-                    
-                }
-            }
+            //нужен include по признаку
+            List<ImageInfo> images = db.Images.ToList();
             return View(await db.Posts.ToListAsync());
         }
 

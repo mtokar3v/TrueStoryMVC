@@ -8,7 +8,7 @@ namespace TrueStoryMVC.Models
         public DbSet<ImageInfo> Images { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
-           // Database.EnsureDeleted();
+             //Database.EnsureDeleted();
            // Database.EnsureCreated();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
