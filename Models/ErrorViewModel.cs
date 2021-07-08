@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace TrueStoryMVC.Models
+namespace EFDataApp.Models
 {
     public class ErrorViewModel
     {

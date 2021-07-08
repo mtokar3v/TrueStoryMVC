@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using TrueStoryMVC.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace TrueStoryMVC
 {
@@ -26,6 +27,7 @@ namespace TrueStoryMVC
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
+            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationContext>();
             services.AddControllersWithViews();
         }
 
@@ -45,6 +47,7 @@ namespace TrueStoryMVC
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

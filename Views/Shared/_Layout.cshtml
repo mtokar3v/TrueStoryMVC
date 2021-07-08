@@ -10,6 +10,24 @@
     <title>@ViewData["Title"]</title>
 </head>
 <body>
+    <div>
+        @{
+            if (User.Identity.IsAuthenticated)
+            {
+                <p></p>
+                <p>@User.Identity.Name</p>
+                <form method="post" asp-controller="Account" asp-action="Logout">
+                    <input type="submit" value="Выход" />
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login">Вход</a>
+                <a asp-controller="Account" asp-action="Register">Регистрация</a>
+            }
+        }
+        <a asp-controller="Account" asp-action="Register"> SingIN</a>
+    </div>
     @RenderBody()
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

@@ -1,0 +1,24 @@
+﻿@model TrueStoryMVC.Models.ViewModels.RegisterUserModel
+<h2>Регистрация нового пользователя</h2>
+<form method="post" asp-controller="Account" asp-action="Register">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <label asp-for="Email"></label><br />
+        <input asp-for="Email" />
+    </div>
+    <div>
+        <label asp-for="Name"></label><br />
+        <input asp-for="Name" />
+    </div>
+    <div>
+        <label asp-for="Password"></label><br />
+        <input asp-for="Password" />
+    </div>
+    <div>
+        <label asp-for="PasswordConfirm"></label><br />
+        <input asp-for="PasswordConfirm" />
+    </div>
+    <div>
+        <input type="submit" value="Регистрация" />
+    </div>
+</form>
