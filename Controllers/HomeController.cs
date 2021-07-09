@@ -12,6 +12,7 @@ using TrueStoryMVC.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
 using System.Drawing;   
 using System.Web;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TrueStoryMVC.Controllers
 {
@@ -23,12 +24,14 @@ namespace TrueStoryMVC.Controllers
             db = context;
         }
 
+        [Authorize] 
         public IActionResult Add()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Add(PostModel pvm)
         {
             Post post = new Post{Header = pvm.Header};
@@ -77,12 +80,15 @@ namespace TrueStoryMVC.Controllers
 
                             db.Images.Add(img);
                         }
-                }
+                    }
                 }
             }
-            await db.SaveChangesAsync();
 
-            Post post1 = db.Posts.First();
+            if(!String.IsNullOrEmpty(pvm.TagsLine))
+            {
+                post.Tags = pvm.TagsLine;
+            }
+            await db.SaveChangesAsync();
             return RedirectToAction("Hot");
         }
 
@@ -109,6 +115,22 @@ namespace TrueStoryMVC.Controllers
             return View(await db.Posts.ToListAsync());
         }
 
+        [HttpGet]
+        public IActionResult SearchTag()
+        {
+            return View();
+        }
 
+        [HttpPost]
+        public IActionResult SearchTag(Tag SomeTags)
+        {
+            var posts = db.Posts.ToList();
+            return RedirectToAction("Tag", posts);
+        }
+         
+        public IActionResult Tag(IEnumerable<Post> posts)
+        {
+            return View(posts);
+        }
     }
 }

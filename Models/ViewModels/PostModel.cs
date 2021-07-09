@@ -11,6 +11,7 @@ namespace TrueStoryMVC.Models.ViewModels
     {
         public string Header { get; set; }
         public string Text { get; set; }
+        public string TagsLine { get; set; }
         public List<IFormFile> Image { get; set; }
     }
 }
