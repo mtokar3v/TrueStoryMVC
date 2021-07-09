@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace TrueStoryMVC.Models
 {
-    [Index(nameof(UserName))]
+   // [Index(nameof(UserName))]
     public class User: IdentityUser 
     {
         public int Raiting { get; set; }

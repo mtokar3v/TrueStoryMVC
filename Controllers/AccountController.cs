@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TrueStoryMVC.Models;
 using TrueStoryMVC.Models.ViewModels;
+using TrueStoryMVC.Services;
 
 namespace TrueStoryMVC.Controllers
 {
@@ -34,8 +36,18 @@ namespace TrueStoryMVC.Controllers
                 IdentityResult result = await _userManager.CreateAsync(user, model.Password);
                 if(result.Succeeded)
                 {
-                    await _signInManager.SignInAsync(user, true);
-                    return RedirectToAction("Hot", "Home");
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Action(
+                       "ConfirmEmail",
+                        "Account",
+                        new { userId = user.Id, code = code },
+                        HttpContext.Request.Scheme);
+
+                    EmailService emailService = new EmailService();
+                    await emailService.SendEmailAsync(model.Email, "Confirm your account",
+                        $"Подтвердите регистрацию, перейдя по ссылке: <a href='{callbackUrl}'>link</a>");
+
+                    return Content("Для завершения регистрации проверьте электронную почту и перейдите по ссылке, указанной в письме");   
                 }
                 else
                 {
@@ -47,6 +59,29 @@ namespace TrueStoryMVC.Controllers
                 
             }
             return View(model);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                return View("Error");
+            }
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return View("Error");
+            }
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            if (result.Succeeded)
+            {
+                await _signInManager.SignInAsync(user, true);
+                return RedirectToAction("Hot", "Home");
+            }
+            else
+                return View("Error");
         }
 
         [HttpGet]

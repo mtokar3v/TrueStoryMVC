@@ -109,9 +109,6 @@ namespace TrueStoryMVC.Controllers
             return View(await db.Posts.ToListAsync());
         }
 
-        public async Task<IActionResult> Img()
-        {
-            return View(await db.Images.ToListAsync());
-        }
+
     }
 }
