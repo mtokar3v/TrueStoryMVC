@@ -122,14 +122,20 @@ namespace TrueStoryMVC.Controllers
         }
 
         [HttpPost]
-        public IActionResult SearchTag(Tag SomeTags)
+        public IActionResult SearchTag(string Tags)
         {
-            var posts = db.Posts.ToList();
-            return RedirectToAction("Tag", posts);
+            return RedirectToAction("Tag", new { SomeTags = Tags});
         }
          
-        public IActionResult Tag(IEnumerable<Post> posts)
+        public IActionResult Tag(string SomeTags)
         {
+            IQueryable posts = null;
+            if (!String.IsNullOrEmpty(SomeTags))
+            {
+                string[] tagArray = SomeTags.Split(new char[] { ' ', ',', ';' });
+                foreach (string s in tagArray)
+                    posts = db.Posts.Where(p => p.Tags.Contains(s));
+            }
             return View(posts);
         }
     }
