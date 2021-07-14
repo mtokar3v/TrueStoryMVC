@@ -28,8 +28,8 @@
         }
         <a asp-controller="Account" asp-action="Register"> SingIN</a>
     </div>
-    <form asp-action="SearchTag" asp-controller="Home">
-        <input asp-action="SearchTag" asp-controller="Home" name="Tags" placeholder="Введите тэги через пробел" />
+    <form asp-action="Tag" asp-controller="Home">
+        <input asp-action="Tag" asp-controller="Home" name="SomeTags" placeholder="Введите тэги через пробел" />
         <input type="submit" value="Поиск">
     </form>
     @RenderBody()

@@ -26,9 +26,22 @@
                         PostLine += t + " ";
                     <p>@PostLine</p>
                 }
+
+                @if(item.comments.Count != 0)
+                {
+                    foreach (var com in item.comments)
+                    {
+                        <div class="row"><p>@com.Text</p></div>
+                    }
+                }
                 <div>
                     <a asp-controller="Home" asp-action="Delete" asp-route-id="@item.Id"> Удалить</a>
                 </div>
+                <form asp-action="Comment" asp-controller="Home">
+                    <input type="hidden" value=@item.Id name="comment.PostId">
+                    <input name="comment.Text">
+                    <input type="submit" value="Отправить">
+                </form>
             </div>
         </div>
     }
