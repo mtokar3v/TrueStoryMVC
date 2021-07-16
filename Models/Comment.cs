@@ -12,6 +12,7 @@ namespace TrueStoryMVC.Models
         public string FromName { get; set; }
         public string Text { get; set; }
         public int Rainting { get; set; }
+        public DateTime PostTime { get; set; }
         public int PostId{ get; set; }
     }
 }

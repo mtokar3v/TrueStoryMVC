@@ -23,7 +23,6 @@ namespace TrueStoryMVC.Services
                 await client.ConnectAsync("smtp.gmail.com", 465, true);
                 await client.AuthenticateAsync("mtokar3v@gmail.com", "jwcaamhgfcqtsicu");
                 await client.SendAsync(emailMessage);
-
                 await client.DisconnectAsync(true);
             }
         }

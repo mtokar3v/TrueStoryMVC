@@ -1,4 +1,6 @@
 ﻿@model IEnumerable<TrueStoryMVC.Models.Post>
 
-<p>Найдено постов: @Model.Count()</p>
-@{await Html.RenderPartialAsync("_GetPosts");}
+<div class="col-md-9">
+    <p>Найдено постов: @Model.Count()</p>
+    @{await Html.RenderPartialAsync("_GetPosts");}
+</div>

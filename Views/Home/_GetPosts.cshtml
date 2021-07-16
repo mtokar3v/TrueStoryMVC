@@ -1,49 +1,52 @@
 ﻿@model IEnumerable<TrueStoryMVC.Models.Post>
-<div class="container">
 
+<div class="row">
     @foreach (Post item in Model)
     {
-        <div class="row justify-content-center border" style="width:70%">
-            <div class="col-8">
-                <h2 class="row">@item.Header</h2>
-                <p class="row">@item.Text</p>
+        <div class="col-sm-2"><p>стрелочки</p></div>
+        <div class="col-sm-10 border mt-1 p-1" style="background-color: white">
+            <h2 class="text-secondary" style="display:inline; padding: 5% 0 0 5%">@item.Header</h2>
+            <p-time post-time=@item.PostTime class="text-secondary ml-1" style="display: inline" />
+            <p class=" text-justify w-100" style="padding: 3% 3% 0 3%">@item.Text</p>
 
-                @{
-                    if (item.PostImages.Count != 0)
+            @{
+                if (item.PostImages.Count != 0)
+                {
+                    foreach (ImageInfo img in item.PostImages)
                     {
-                        foreach (ImageInfo img in item.PostImages)
-                        {
-                            <div class="row"><img style="width:100%" src="data:image/jpeg ;base64,@(Convert.ToBase64String(img.Data))" /></div>
-                        }
+                        <img class="w-100 mx-auto img-fluid" src="data:image/jpeg ;base64,@(Convert.ToBase64String(img.Data))" />
                     }
                 }
+            }
 
-                @if (!String.IsNullOrEmpty(item.Tags))
+            @if (!String.IsNullOrEmpty(item.Tags))
+            {
+                string[] tags = item.Tags.Split(new char[] { ' ', ',', ';' });
+                foreach (string t in tags)
                 {
-                    string[] tags = item.Tags.Split(new char[] { ' ', ',', ';' });
-                    string PostLine = "";
-                    foreach (string t in tags)
-                        PostLine += t + " ";
-                    <p>@PostLine</p>
+                    <a asp-controller="home" asp-action="tag" asp-route-sometags="@t">@t</a>
                 }
+            }
 
-                @if(item.comments.Count != 0)
+            @if (item.comments.Count != 0)
+            {
+                foreach (var com in item.comments)
                 {
-                    foreach (var com in item.comments)
-                    {
-                        <div class="row"><p>@com.Text</p></div>
-                    }
+
+                    <div class="border rounded mt-1 p-1" style="line-height: 10px">
+                        <p class="text-secondary" style="display: inline"><a src="\">@com.FromName</a></p><p-time post-time=@com.PostTime class="text-secondary ml-1" style="display: inline" />
+                        <p class="mt-3">@com.Text</p>
+                    </div>
                 }
-                <div>
-                    <a asp-controller="Home" asp-action="Delete" asp-route-id="@item.Id"> Удалить</a>
-                </div>
-                <form asp-action="Comment" asp-controller="Home">
-                    <input type="hidden" value=@item.Id name="comment.PostId">
-                    <input name="comment.Text">
-                    <input type="submit" value="Отправить">
-                </form>
+            }
+            <div>
+                <a asp-controller="Home" asp-action="Delete" asp-route-id="@item.Id"> Удалить</a>
             </div>
+            <form asp-action="Comment" asp-controller="Home">
+                <input type="hidden" value=@item.Id name="comment.PostId">
+                <input name="comment.Text">
+                <input type="submit" value="Отправить">
+            </form>
         </div>
     }
-
 </div>

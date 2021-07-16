@@ -1,4 +1,8 @@
 ﻿@model IEnumerable<TrueStoryMVC.Models.Post>
 
-<a asp-action="Add">Новый пост</a>
-@{await Html.RenderPartialAsync("_GetPosts");}
+
+<div class="col-md-9">
+    <a asp-action="Add">Новый пост</a>
+    @{await Html.RenderPartialAsync("_GetPosts");}
+</div>
+

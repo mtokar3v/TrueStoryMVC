@@ -35,7 +35,7 @@ namespace TrueStoryMVC.Controllers
         [Authorize]
         public async Task<IActionResult> Add(PostModel pvm)
         {
-            Post post = new Post{Header = pvm.Header};
+            Post post = new Post { Header = pvm.Header, PostTime = DateTime.Now.ToUniversalTime() };
             if (!String.IsNullOrEmpty(pvm.Text)) post.Text = pvm.Text;
             db.Posts.Add(post);
             await db.SaveChangesAsync();
@@ -133,7 +133,7 @@ namespace TrueStoryMVC.Controllers
         public async Task<IActionResult> Comment(CommentModel comment)
         {
             User user = await _userManager.FindByNameAsync(User.Identity.Name);
-            Comment newComment = new Comment { PostId = comment.PostId, Text = comment.Text, FromName = user.UserName };
+            Comment newComment = new Comment { PostId = comment.PostId, Text = comment.Text, FromName = user.UserName, PostTime = DateTime.Now.ToUniversalTime() };
             db.Comments.Add(newComment);
             await db.SaveChangesAsync();
             return RedirectToAction("hot");
