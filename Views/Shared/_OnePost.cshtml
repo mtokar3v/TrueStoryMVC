@@ -1,0 +1,89 @@
+﻿@model TrueStoryMVC.Models.Post
+
+<div class="col-sm-2">
+    <button id="like" onclick="like(this, 1, @Model.Id)">лайк</button>
+    <p id="post-rating-@Model.Id">@Model.Rating</p>
+    <button id="dislike" onclick="like(this, 2,  @Model.Id)">дизлайк</button>
+</div>
+<div class="col-sm-10 border mt-1 p-1" style="background-color: white">
+    <a asp-action="userpage" asp-controller="users" asp-route-username="@Model.Author" style="display: inline; padding: 5% 0 0 5%">@Model.Author</a>
+    <p-time post-time=@Model.PostTime class="text-secondary ml-1" style="display: inline" />
+    <h2 class="text-secondary" style="padding-left: 5%">@Model.Header</h2>
+    <p class=" text-justify w-100" style="padding: 3% 3% 0 3%">@Model.Text</p>
+
+    @{
+        if (Model.PostImages.Count != 0)
+        {
+            foreach (ImageInfo img in Model.PostImages)
+            {
+                <img class="w-100 mx-auto img-fluid pt-1" src="data:image/jpeg ;base64,@(Convert.ToBase64String(img.Data))" />
+            }
+        }
+    }
+
+    @if (!String.IsNullOrEmpty(Model.Tags))
+    {
+        string[] tags = Model.Tags.Split(new char[] { ' ', ',', ';' });
+        foreach (string t in tags)
+        {
+            <a asp-controller="home" asp-action="tag" asp-route-sometags="@t">@t</a>
+        }
+    }
+    <div id="post-comment-block">
+    @if (Model.comments.Count != 0)
+    {
+        foreach (var com in Model.comments)
+        {
+
+            <div class="border rounded mt-1 p-1" style="line-height: 10px">
+                <span class="text-secondary"><a asp-action="userpage" asp-controller="users" asp-route-username="@com.FromName">@com.FromName</a></span>
+                <p-time post-time=@com.PostTime class="text-secondary ml-1" />
+                <pre style="overflow: hidden;" class="mt-3">@com.Text</pre>
+            </div>
+        }
+    }
+    </div>
+
+
+    <div>
+        <a asp-controller="Home" asp-action="Delete" asp-route-id="@Model.Id"> Удалить</a>
+    </div>
+
+    <form id="formElem-@Model.Id" onsubmit="postArticle()">
+        <input type="hidden" name="PostId" value="@Model.Id" />
+        <input type="text" name="Text" />
+        <input type="submit" value="Отправить">
+    </form>
+</div>
+
+<script>
+    var postArticle = () => {
+        event.preventDefault();
+        var Article = new FormData(this.event.target);
+
+        fetch('/home/comment', {
+            method: "POST",
+            body: Article
+        })
+
+        let div = document.createElement('div');
+        div.className = "border rounded mt-1 p-1";
+        div.style = "line-height: 10px";
+        let span = document.createElement('span');
+        span.className = "text-secondary";
+        let fromName = '@Context.User.Identity.Name';
+        let ref = document.createElement('a');
+        ref.href = '/users/userpage?username='+fromName;
+        ref.append(document.createTextNode(fromName));
+        span.append(ref);
+        span.append(document.createTextNode(' сейчас'));
+        div.append(span);
+        let pre = document.createElement('pre');
+        pre.className = "mt-3";
+        pre.style = "overflow:hidden;";
+        pre.innerHTML = Article.get('Text');
+        div.append(pre); 
+        document.getElementById('post-comment-block').append(div);
+    }
+</script>
+

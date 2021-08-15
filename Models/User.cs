@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace TrueStoryMVC.Models
 {
-   // [Index(nameof(UserName))]
     public class User: IdentityUser 
     {
-        public int Raiting { get; set; }
+        public int Rating { get; set; }
         public byte[] ProfilePhoto { get; set; }
         public List<User> Subscribers { get; set;}
+        public List<Like> Likes { get; set; }
     }
 }

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace TrueStoryMVC.Models.ViewModels
 {
-    public class CommentModel
+    public class LikeModel
     {
         public int PostId { get; set; }
-        public string Text { get; set; }     
+        public byte LikeType { get; set; }
     }
 }

@@ -3,6 +3,7 @@
 
 <div class="col-md-9">
     <a asp-action="Add">Новый пост</a>
-    @{await Html.RenderPartialAsync("_GetPosts");}
+    @{await Html.RenderPartialAsync("_GetPosts", Model);}
 </div>
 
+     

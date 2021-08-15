@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
@@ -26,6 +24,14 @@ namespace TrueStoryMVC.Controllers
                 IdentityResult result = await _userManager.DeleteAsync(user);
             }
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserPage(string userName)
+        {
+            User user = new User();
+            user = await _userManager.FindByNameAsync(userName);
+            return View(user);
         }
     }
 }

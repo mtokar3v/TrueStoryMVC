@@ -1,0 +1,11 @@
+﻿@model TrueStoryMVC.Models.User
+<div class="col-sm-9">
+    <div class="bg-secondary" style="height: 300px">
+    @if(Model.ProfilePhoto == null)
+    {
+        <img class="rounded-circle border " src="~/user_pic.jpg">
+    }
+    </div>
+    <h2>@Model.UserName</h2>
+    <p>@Model.Rating</p>
+</div>

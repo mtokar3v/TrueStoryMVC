@@ -12,20 +12,21 @@ using System.Drawing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
+
 namespace TrueStoryMVC.Controllers
 {
     public class HomeController : Controller
     {
         private ApplicationContext db;
         private readonly UserManager<User> _userManager;
-        
+
         public HomeController(ApplicationContext context, UserManager<User> userManager)
         {
             _userManager = userManager;
             db = context;
         }
 
-        [Authorize] 
+        [Authorize]
         public IActionResult Add()
         {
             return View();
@@ -35,7 +36,7 @@ namespace TrueStoryMVC.Controllers
         [Authorize]
         public async Task<IActionResult> Add(PostModel pvm)
         {
-            Post post = new Post { Header = pvm.Header, PostTime = DateTime.Now.ToUniversalTime() };
+            Post post = new Post { Header = pvm.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name };
             if (!String.IsNullOrEmpty(pvm.Text)) post.Text = pvm.Text;
             db.Posts.Add(post);
             await db.SaveChangesAsync();
@@ -85,7 +86,7 @@ namespace TrueStoryMVC.Controllers
                 }
             }
 
-            if(!String.IsNullOrEmpty(pvm.TagsLine))
+            if (!String.IsNullOrEmpty(pvm.TagsLine))
             {
                 post.Tags = pvm.TagsLine;
             }
@@ -95,7 +96,7 @@ namespace TrueStoryMVC.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if(id!=null)
+            if (id != null)
             {
                 Post post = await db.Posts.FirstOrDefaultAsync(p => p.Id == id);
                 if (post != null)
@@ -130,13 +131,83 @@ namespace TrueStoryMVC.Controllers
             return View(posts);
         }
 
-        public async Task<IActionResult> Comment(CommentModel comment)
+        //public async Task<IActionResult> Comment(CommentModel comment)
+        //{
+        //    User user = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    Comment newComment = new Comment { PostId = comment.PostId, Text = comment.Text, FromName = user.UserName, PostTime = DateTime.Now.ToUniversalTime() };
+        //    db.Comments.Add(newComment);
+        //    await db.SaveChangesAsync();
+        //    return RedirectToAction("hot");
+        //}
+
+        [HttpPost]
+        public async Task<IActionResult> Comment([FromForm] CommentModel comment)
         {
             User user = await _userManager.FindByNameAsync(User.Identity.Name);
             Comment newComment = new Comment { PostId = comment.PostId, Text = comment.Text, FromName = user.UserName, PostTime = DateTime.Now.ToUniversalTime() };
             db.Comments.Add(newComment);
             await db.SaveChangesAsync();
-            return RedirectToAction("hot");
+            return Ok();
+        }
+
+        public class Person
+        {
+            public int Count { get; set; }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> Like([FromBody] LikeModel like)
+        {
+            if (HttpContext.User.Identity.IsAuthenticated)
+            {
+                int result;
+                //cache!!!!!!!!!!!
+                User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                Like _like = await db.Likes.FirstOrDefaultAsync(l => l.PostId == like.PostId && l.UserId == user.Id);
+
+                if (_like == null)
+                {
+                    _like = new Like { PostId = like.PostId, LikeType = like.LikeType, UserId = user.Id };
+                    db.Likes.Add(_like);
+                    await db.SaveChangesAsync();
+                    result = likeCalculate(like.LikeType, 1);
+                }
+                else if (_like.LikeType != like.LikeType)
+                {
+                    _like.LikeType = like.LikeType;
+                    db.Likes.Update(_like);
+                    await db.SaveChangesAsync();
+                    result = likeCalculate(like.LikeType, 2);
+                }
+                else
+                    result = 0;
+
+                if (result != 0)
+                {
+                    Post post = await db.Posts.FindAsync(like.PostId);
+                    User author = await _userManager.FindByNameAsync(post.Author);
+                    author.Rating += result;
+                    post.Rating += result;
+                    db.Posts.Update(post);
+                    await db.SaveChangesAsync();
+                }
+                return Json(new { result = result });
+            }
+            else
+                return Json(null);
+        }
+
+        [NonAction]
+        int likeCalculate(byte likeType, int delta)
+        {
+            return likeType switch
+            {
+                (byte)LikeType.NONE => 0,
+                (byte)LikeType.LIKE => delta,
+                (byte)LikeType.DISLIKE => -delta,
+                _ => throw new Exception("Неивестный LikeType")
+            };
+
         }
     }
 }

@@ -8,7 +8,7 @@ namespace TrueStoryMVC.TagHelpers
         public DateTime PostTime { get; set; } = DateTime.Now;
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            output.TagName = "div";
+            output.TagName = "span";
             output.TagMode = TagMode.StartTagAndEndTag;
 
             DateTime time = DateTime.Now.ToUniversalTime();

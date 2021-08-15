@@ -1,0 +1,33 @@
+﻿@model IEnumerable<TrueStoryMVC.Models.Post>
+
+<div class="row">
+    @foreach (Post item in Model)
+    {
+        await Html.RenderPartialAsync("_OnePost", item);
+    }
+</div>
+
+<script>
+    async function like(button, type, postId) {
+        let url = '/home/like';
+        let responce = await fetch(url, {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ PostId: postId, LikeType: type })
+        });
+
+        let json = await responce.json();
+
+        if (json != null) {
+            let html = document.getElementById("post-rating-" + postId);
+            let count = (Number)(html.textContent);
+            count += json.result;
+            html.innerHTML = count;
+        }
+        else
+            window.location.href = 'account/login';
+    }
+</script>
