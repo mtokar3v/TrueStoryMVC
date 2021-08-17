@@ -9,5 +9,6 @@ namespace TrueStoryMVC.Models.ViewModels
     {
         public int PostId { get; set; }
         public byte LikeType { get; set; }
+        public byte CommentType { get; set; }
     }
 }

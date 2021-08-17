@@ -112,42 +112,51 @@ namespace TrueStoryMVC.Controllers
 
         public async Task<IActionResult> Hot()
         {
-            //нужен include по признаку
-            List<Comment> comments = db.Comments.ToList();
-            List<ImageInfo> images = db.Images.ToList();
-            return View(await db.Posts.ToListAsync());
+
+            //linq cant subtract two dates :
+            DateTime time = DateTime.UtcNow;
+            List<Post> posts = await db.Posts.Where(t=> t.PostTime.Hour + 1> time.Hour && t.PostTime.Day == time.Day).OrderByDescending(p => p.Rating).Take(5).ToListAsync();
+
+            foreach (var i in posts)
+            {
+                Console.WriteLine($"post: hour + 1 = {i.PostTime} now: hour = {DateTime.UtcNow}");
+            }
+
+            foreach(var item in posts)
+            {
+                await db.Comments.Where(c => c.PostId == item.Id).LoadAsync();
+                await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
+            }
+            return View(posts);
         }
-        public IActionResult Tag(string SomeTags)
+        public async Task<IActionResult> Tag(string SomeTags)
         {
-            IQueryable posts = null;
+            List<Post> posts = null;
             if (!String.IsNullOrEmpty(SomeTags))
             {
-                //нужен include по признаку
-                List<ImageInfo> images = db.Images.ToList();
                 string[] tagArray = SomeTags.Split(new char[] { ' ', ',', ';' });
                 foreach (string s in tagArray)
-                    posts = db.Posts.Where(p => p.Tags.Contains(s));
+                    posts = await db.Posts.Where(p => p.Tags.Contains(s)).ToListAsync();
+
+                foreach (var p in posts)
+                    await db.Images.Where(i => i.PostId == p.Id).LoadAsync();
             }
             return View(posts);
         }
 
-        //public async Task<IActionResult> Comment(CommentModel comment)
-        //{
-        //    User user = await _userManager.FindByNameAsync(User.Identity.Name);
-        //    Comment newComment = new Comment { PostId = comment.PostId, Text = comment.Text, FromName = user.UserName, PostTime = DateTime.Now.ToUniversalTime() };
-        //    db.Comments.Add(newComment);
-        //    await db.SaveChangesAsync();
-        //    return RedirectToAction("hot");
-        //}
-
         [HttpPost]
         public async Task<IActionResult> Comment([FromForm] CommentModel comment)
         {
-            User user = await _userManager.FindByNameAsync(User.Identity.Name);
-            Comment newComment = new Comment { PostId = comment.PostId, Text = comment.Text, FromName = user.UserName, PostTime = DateTime.Now.ToUniversalTime() };
-            db.Comments.Add(newComment);
-            await db.SaveChangesAsync();
-            return Ok();
+            if (User.Identity.IsAuthenticated)
+            {
+                User user = await _userManager.FindByNameAsync(User.Identity.Name);
+                Comment newComment = new Comment { Text = comment.Text, FromName = user.UserName, PostTime = DateTime.Now.ToUniversalTime(), PostId = comment.PostId };
+                db.Comments.Add(newComment);
+                await db.SaveChangesAsync();
+                return Ok();
+            }
+            else 
+                return Unauthorized();
         }
 
         public class Person
@@ -163,11 +172,22 @@ namespace TrueStoryMVC.Controllers
                 int result;
                 //cache!!!!!!!!!!!
                 User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                Like _like = await db.Likes.FirstOrDefaultAsync(l => l.PostId == like.PostId && l.UserId == user.Id);
+                Like _like;
+                if (like.CommentType == (byte)CommentType.FROM_POST)
+                   _like = await db.Likes.FirstOrDefaultAsync(l => l.PostId == like.PostId && l.UserId == user.Id);
+                else if (like.CommentType == (byte)CommentType.FROM_COMMENT)
+                    _like = await db.Likes.FirstOrDefaultAsync(l => l.CommentId == like.PostId && l.UserId == user.Id);
+                else
+                    return Json(null);
 
                 if (_like == null)
                 {
-                    _like = new Like { PostId = like.PostId, LikeType = like.LikeType, UserId = user.Id };
+                    _like = new Like { LikeType = like.LikeType, UserId = user.Id };
+                    if (like.CommentType == (byte)CommentType.FROM_POST)
+                        _like.PostId = like.PostId;
+                    else if(like.CommentType == (byte)CommentType.FROM_COMMENT)
+                        _like.CommentId = like.PostId;
+
                     db.Likes.Add(_like);
                     await db.SaveChangesAsync();
                     result = likeCalculate(like.LikeType, 1);
@@ -184,11 +204,30 @@ namespace TrueStoryMVC.Controllers
 
                 if (result != 0)
                 {
-                    Post post = await db.Posts.FindAsync(like.PostId);
-                    User author = await _userManager.FindByNameAsync(post.Author);
-                    author.Rating += result;
-                    post.Rating += result;
-                    db.Posts.Update(post);
+
+                    User author;
+                    
+                    //не помешал бы класс который все это делает обобщенно
+
+                    if (like.CommentType == (byte)CommentType.FROM_POST)
+                    {
+                        Post post = await db.Posts.FindAsync(like.PostId);
+                        author = await _userManager.FindByNameAsync(post.Author);
+                        post.Rating += result;
+                        author.Rating += result;
+                        db.Posts.Update(post);
+                    }
+                    else if (like.CommentType == (byte)CommentType.FROM_COMMENT)
+                    {
+                        Comment comment = await db.Comments.FindAsync(like.PostId);
+                        author = await _userManager.FindByNameAsync(comment.FromName);
+                        comment.Rating += result;
+                        author.Rating += result;
+                        db.Comments.Update(comment);
+                    }
+                    
+                     
+                    
                     await db.SaveChangesAsync();
                 }
                 return Json(new { result = result });
@@ -196,6 +235,8 @@ namespace TrueStoryMVC.Controllers
             else
                 return Json(null);
         }
+
+
 
         [NonAction]
         int likeCalculate(byte likeType, int delta)
