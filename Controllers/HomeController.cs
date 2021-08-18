@@ -115,18 +115,34 @@ namespace TrueStoryMVC.Controllers
 
             //linq cant subtract two dates :
             DateTime time = DateTime.UtcNow;
-            List<Post> posts = await db.Posts.Where(t=> t.PostTime.Hour + 1> time.Hour && t.PostTime.Day == time.Day).OrderByDescending(p => p.Rating).Take(5).ToListAsync();
+            List<Post> posts = await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Take(20).ToListAsync();
 
-            foreach (var i in posts)
-            {
-                Console.WriteLine($"post: hour + 1 = {i.PostTime} now: hour = {DateTime.UtcNow}");
-            }
-
-            foreach(var item in posts)
-            {
-                await db.Comments.Where(c => c.PostId == item.Id).LoadAsync();
+            foreach (var item in posts)
                 await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
-            }
+            return View(posts);
+        }
+
+        public async Task<IActionResult> Best()
+        {
+
+            //linq cant subtract two dates :
+            DateTime time = DateTime.UtcNow;
+            List<Post> posts = await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Take(20).ToListAsync();
+
+            foreach (var item in posts)
+                await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
+            return View(posts);
+        }
+
+        public async Task<IActionResult> New()
+        {
+
+            //linq cant subtract two dates :
+            DateTime time = DateTime.UtcNow;
+            List<Post> posts = await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Take(20).ToListAsync();
+
+            foreach (var item in posts)
+                await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
             return View(posts);
         }
         public async Task<IActionResult> Tag(string SomeTags)
@@ -142,6 +158,22 @@ namespace TrueStoryMVC.Controllers
                     await db.Images.Where(i => i.PostId == p.Id).LoadAsync();
             }
             return View(posts);
+        }
+
+        public async Task<IActionResult> GetPostBlock([FromBody]PostBlockInfo postBlock)
+        {
+            DateTime time = DateTime.UtcNow;
+            List<Post> posts = postBlock.PostBlockType switch
+            {
+                (byte)PostBlockType.HOT => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Skip(postBlock.Number * 20).Take(20).ToListAsync(),
+                (byte)PostBlockType.BEST => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * 20).Take(20).ToListAsync(),
+                (byte)PostBlockType.NEW => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * 20).Take(20).ToListAsync(),
+                _=>throw new Exception("Неизвестный PostBlockType")
+            };
+
+            foreach(var item in posts)
+                await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
+            return PartialView("_GetPosts", posts);
         }
 
         [HttpPost]
@@ -167,6 +199,7 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<JsonResult> Like([FromBody] LikeModel like)
         {
+
             if (HttpContext.User.Identity.IsAuthenticated)
             {
                 int result;

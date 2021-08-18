@@ -12,20 +12,17 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-sm bg-primary navbar-dark sticky-top">
         <ul class="navbar-nav">
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" asp-action="hot" asp-controller="home">Горячее</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Лучшее</a>
+                <a class="nav-link"asp-action="best" asp-controller="home">Лучшее</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Свежее</a>
+                <a class="nav-link" asp-action="new" asp-controller="home">Свежее</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">Подписки</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" asp-action="counter" asp-controller="home">Counter</a>
             </li>
         </ul>
     </nav>

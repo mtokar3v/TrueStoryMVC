@@ -4,12 +4,12 @@
     @foreach (Post item in Model)
     {
         await Html.RenderPartialAsync("_OnePost", item);
-        //<script async>alert(@item.Id)</script>
     }
 </div>
  
 
 <script>
+
      async function postArticle(postId) {
 
         event.preventDefault();
@@ -48,9 +48,6 @@
 
     async function like(button, type, postId, commentType) {
         let url = '/home/like';
-
-
-
         let responce = await fetch(url, {
             method: 'post',
             headers: {
