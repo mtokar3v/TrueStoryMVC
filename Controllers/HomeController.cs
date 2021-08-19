@@ -110,40 +110,19 @@ namespace TrueStoryMVC.Controllers
             return RedirectToAction("Hot");
         }
 
-        public async Task<IActionResult> Hot()
+        public IActionResult Hot()
         {
-
-            //linq cant subtract two dates :
-            DateTime time = DateTime.UtcNow;
-            List<Post> posts = await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Take(20).ToListAsync();
-
-            foreach (var item in posts)
-                await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
-            return View(posts);
+            return View();
         }
 
-        public async Task<IActionResult> Best()
+        public IActionResult Best()
         {
-
-            //linq cant subtract two dates :
-            DateTime time = DateTime.UtcNow;
-            List<Post> posts = await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Take(20).ToListAsync();
-
-            foreach (var item in posts)
-                await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
-            return View(posts);
+            return View();
         }
 
-        public async Task<IActionResult> New()
+        public IActionResult New()
         {
-
-            //linq cant subtract two dates :
-            DateTime time = DateTime.UtcNow;
-            List<Post> posts = await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Take(20).ToListAsync();
-
-            foreach (var item in posts)
-                await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
-            return View(posts);
+            return View();
         }
         public async Task<IActionResult> Tag(string SomeTags)
         {
@@ -162,12 +141,13 @@ namespace TrueStoryMVC.Controllers
 
         public async Task<IActionResult> GetPostBlock([FromBody]PostBlockInfo postBlock)
         {
+            Console.WriteLine(postBlock.PostBlockType);
             DateTime time = DateTime.UtcNow;
             List<Post> posts = postBlock.PostBlockType switch
             {
-                (byte)PostBlockType.HOT => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Skip(postBlock.Number * 20).Take(20).ToListAsync(),
-                (byte)PostBlockType.BEST => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * 20).Take(20).ToListAsync(),
-                (byte)PostBlockType.NEW => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * 20).Take(20).ToListAsync(),
+                (byte)PostBlockType.HOT => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Skip(postBlock.Number * 2).Take(2).ToListAsync(),
+                (byte)PostBlockType.BEST => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * 2).Take(2).ToListAsync(),
+                (byte)PostBlockType.NEW => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * 2).Take(2).ToListAsync(),
                 _=>throw new Exception("Неизвестный PostBlockType")
             };
 
@@ -283,5 +263,21 @@ namespace TrueStoryMVC.Controllers
             };
 
         }
+
+        //В модели лишь одно свойство, нужно подумать
+        public async Task<JsonResult> CheckLike([FromBody]PostIdModel PostId)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                Console.WriteLine(PostId.PostId);
+                //в like должен быть username, а не id. Либо id должен быть int, а не string
+                User user = await _userManager.FindByNameAsync(User.Identity.Name);
+                Like like = db.Likes.FirstOrDefault(l => l.PostId == PostId.PostId && l.UserId == user.Id);
+                if (like != null)  
+                    return Json(new { result = like.LikeType });
+            }
+            return Json(null);
+        }
     }
 }
+

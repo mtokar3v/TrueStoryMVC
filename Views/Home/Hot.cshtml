@@ -1,35 +1,11 @@
-﻿@model IEnumerable<TrueStoryMVC.Models.Post>
-
-
-<div class="col-md-9">
+﻿<div class="col-md-9">
     <a asp-action="Add">Новый пост</a>
-    @{await Html.RenderPartialAsync("_GetPosts", Model);}
 </div>
 
+
+<script src="~/js/getPostBlock.js"></script>
+<script src="~/js/like.js"></script>
 <script>
-    //hot/new/best  - дублирование кода!
-    function getCounter() {
-        let counter = 1;
-        return function () {
-            return counter++;
-        }
-    }
-    let count = getCounter();
-
-    window.addEventListener('scroll', async function () {
-        let window_bottom = document.documentElement.getBoundingClientRect().bottom;
-        if (Math.round(window_bottom) <= document.documentElement.clientHeight) {
-            let responce = await fetch('/home/GetPostBlock', {
-                method: 'post',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ PostBlockType: 0, Number: count() })
-            });
-
-            let div = this.document.createElement('div');
-            div.innerHTML = await responce.text();
-            this.document.getElementsByClassName('col-md-9')[0].append(div);
-        }
-    });
+    window.onload = getPostBlock(0);
+    window.addEventListener('scroll', () => getPostBlockAfterScroll(0), false);
 </script>
