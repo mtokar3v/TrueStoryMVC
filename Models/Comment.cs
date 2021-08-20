@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TrueStoryMVC.Models
 {
-    enum CommentType : byte
+    enum FromType : byte
     {
         FROM_POST,
         FROM_COMMENT

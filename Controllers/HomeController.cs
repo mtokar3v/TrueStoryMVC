@@ -179,16 +179,16 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<JsonResult> Like([FromBody] LikeModel like)
         {
-
+            Console.WriteLine(like.PostId);
             if (HttpContext.User.Identity.IsAuthenticated)
             {
                 int result;
                 //cache!!!!!!!!!!!
                 User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
                 Like _like;
-                if (like.CommentType == (byte)CommentType.FROM_POST)
+                if (like.FromType == (byte)FromType.FROM_POST)
                    _like = await db.Likes.FirstOrDefaultAsync(l => l.PostId == like.PostId && l.UserId == user.Id);
-                else if (like.CommentType == (byte)CommentType.FROM_COMMENT)
+                else if (like.FromType == (byte)FromType.FROM_COMMENT)
                     _like = await db.Likes.FirstOrDefaultAsync(l => l.CommentId == like.PostId && l.UserId == user.Id);
                 else
                     return Json(null);
@@ -196,9 +196,9 @@ namespace TrueStoryMVC.Controllers
                 if (_like == null)
                 {
                     _like = new Like { LikeType = like.LikeType, UserId = user.Id };
-                    if (like.CommentType == (byte)CommentType.FROM_POST)
+                    if (like.FromType == (byte)FromType.FROM_POST)
                         _like.PostId = like.PostId;
-                    else if(like.CommentType == (byte)CommentType.FROM_COMMENT)
+                    else if(like.FromType == (byte)FromType.FROM_COMMENT)
                         _like.CommentId = like.PostId;
 
                     db.Likes.Add(_like);
@@ -222,7 +222,7 @@ namespace TrueStoryMVC.Controllers
                     
                     //не помешал бы класс который все это делает обобщенно
 
-                    if (like.CommentType == (byte)CommentType.FROM_POST)
+                    if (like.FromType == (byte)FromType.FROM_POST)
                     {
                         Post post = await db.Posts.FindAsync(like.PostId);
                         author = await _userManager.FindByNameAsync(post.Author);
@@ -230,7 +230,7 @@ namespace TrueStoryMVC.Controllers
                         author.Rating += result;
                         db.Posts.Update(post);
                     }
-                    else if (like.CommentType == (byte)CommentType.FROM_COMMENT)
+                    else if (like.FromType == (byte)FromType.FROM_COMMENT)
                     {
                         Comment comment = await db.Comments.FindAsync(like.PostId);
                         author = await _userManager.FindByNameAsync(comment.FromName);
@@ -265,18 +265,38 @@ namespace TrueStoryMVC.Controllers
         }
 
         //В модели лишь одно свойство, нужно подумать
-        public async Task<JsonResult> CheckLike([FromBody]PostIdModel PostId)
+        public async Task<JsonResult> CheckLike([FromBody]LikeModel _like)
         {
             if (User.Identity.IsAuthenticated)
             {
-                Console.WriteLine(PostId.PostId);
+                Console.WriteLine(_like.PostId) ;
                 //в like должен быть username, а не id. Либо id должен быть int, а не string
                 User user = await _userManager.FindByNameAsync(User.Identity.Name);
-                Like like = db.Likes.FirstOrDefault(l => l.PostId == PostId.PostId && l.UserId == user.Id);
+
+                Like like = _like.FromType switch
+                {
+                    (byte)FromType.FROM_POST => db.Likes.FirstOrDefault(l => l.PostId == _like.PostId && l.UserId == user.Id),
+                    (byte)FromType.FROM_COMMENT => db.Likes.FirstOrDefault(l => l.CommentId == _like.PostId && l.UserId == user.Id),
+                    _=> throw new Exception("Неизвестный FromType")
+                };
+
                 if (like != null)  
                     return Json(new { result = like.LikeType });
             }
             return Json(null);
+        }
+
+        public async Task<IActionResult> Post(int? id)
+        {
+            if (id != null)
+            {
+                Post post = await db.Posts.FindAsync(id);
+                await db.Images.Where(i => i.PostId == post.Id).LoadAsync();
+                await db.Comments.Where(c => c.PostId == post.Id).LoadAsync();
+                return View(post);
+            }
+            else
+                return RedirectToAction("hot");
         }
     }
 }
