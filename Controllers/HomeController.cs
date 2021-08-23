@@ -141,18 +141,25 @@ namespace TrueStoryMVC.Controllers
 
         public async Task<IActionResult> GetPostBlock([FromBody]PostBlockInfo postBlock)
         {
-            Console.WriteLine(postBlock.PostBlockType);
+            const byte HOT = 0;
+            const byte BEST = 1;
+            const byte NEW = 2;
+
             DateTime time = DateTime.UtcNow;
-            List<Post> posts = postBlock.PostBlockType switch
+
+            IQueryable<Post> p_query = postBlock.PostBlockType switch
             {
-                (byte)PostBlockType.HOT => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Skip(postBlock.Number * 2).Take(2).ToListAsync(),
-                (byte)PostBlockType.BEST => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * 2).Take(2).ToListAsync(),
-                (byte)PostBlockType.NEW => await db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * 2).Take(2).ToListAsync(),
+                HOT => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Skip(postBlock.Number * 2).Take(2),
+                BEST => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * 2).Take(2),
+                NEW => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * 2).Take(2),
                 _=>throw new Exception("Неизвестный PostBlockType")
             };
 
+            var posts = await p_query.ToListAsync();
+
             foreach(var item in posts)
                 await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
+
             return PartialView("_GetPosts", posts);
         }
 
@@ -182,13 +189,16 @@ namespace TrueStoryMVC.Controllers
             Console.WriteLine(like.PostId);
             if (HttpContext.User.Identity.IsAuthenticated)
             {
+                const byte FROM_POST = 0;
+                const byte FROM_COMMENT = 1;
+
                 int result;
                 //cache!!!!!!!!!!!
                 User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
                 Like _like;
-                if (like.FromType == (byte)FromType.FROM_POST)
+                if (like.FromType == FROM_POST)
                    _like = await db.Likes.FirstOrDefaultAsync(l => l.PostId == like.PostId && l.UserId == user.Id);
-                else if (like.FromType == (byte)FromType.FROM_COMMENT)
+                else if (like.FromType == FROM_COMMENT)
                     _like = await db.Likes.FirstOrDefaultAsync(l => l.CommentId == like.PostId && l.UserId == user.Id);
                 else
                     return Json(null);
@@ -196,9 +206,9 @@ namespace TrueStoryMVC.Controllers
                 if (_like == null)
                 {
                     _like = new Like { LikeType = like.LikeType, UserId = user.Id };
-                    if (like.FromType == (byte)FromType.FROM_POST)
+                    if (like.FromType == FROM_POST)
                         _like.PostId = like.PostId;
-                    else if(like.FromType == (byte)FromType.FROM_COMMENT)
+                    else if(like.FromType == FROM_COMMENT)
                         _like.CommentId = like.PostId;
 
                     db.Likes.Add(_like);
@@ -222,7 +232,7 @@ namespace TrueStoryMVC.Controllers
                     
                     //не помешал бы класс который все это делает обобщенно
 
-                    if (like.FromType == (byte)FromType.FROM_POST)
+                    if (like.FromType == FROM_POST)
                     {
                         Post post = await db.Posts.FindAsync(like.PostId);
                         author = await _userManager.FindByNameAsync(post.Author);
@@ -230,7 +240,7 @@ namespace TrueStoryMVC.Controllers
                         author.Rating += result;
                         db.Posts.Update(post);
                     }
-                    else if (like.FromType == (byte)FromType.FROM_COMMENT)
+                    else if (like.FromType == FROM_COMMENT)
                     {
                         Comment comment = await db.Comments.FindAsync(like.PostId);
                         author = await _userManager.FindByNameAsync(comment.FromName);
@@ -252,13 +262,17 @@ namespace TrueStoryMVC.Controllers
 
 
         [NonAction]
-        int likeCalculate(byte likeType, int delta)
+        private int likeCalculate(byte likeType, int delta)
         {
+            const byte NONE = 0;
+            const byte LIKE = 1;
+            const byte DISLIKE = 2;
+
             return likeType switch
             {
-                (byte)LikeType.NONE => 0,
-                (byte)LikeType.LIKE => delta,
-                (byte)LikeType.DISLIKE => -delta,
+                NONE => 0,
+                LIKE => delta,
+                DISLIKE => -delta,
                 _ => throw new Exception("Неивестный LikeType")
             };
 
@@ -269,14 +283,16 @@ namespace TrueStoryMVC.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                Console.WriteLine(_like.PostId) ;
+                const byte FROM_POST = 0;
+                const byte FROM_COMMENT = 1;
+
                 //в like должен быть username, а не id. Либо id должен быть int, а не string
                 User user = await _userManager.FindByNameAsync(User.Identity.Name);
 
                 Like like = _like.FromType switch
                 {
-                    (byte)FromType.FROM_POST => db.Likes.FirstOrDefault(l => l.PostId == _like.PostId && l.UserId == user.Id),
-                    (byte)FromType.FROM_COMMENT => db.Likes.FirstOrDefault(l => l.CommentId == _like.PostId && l.UserId == user.Id),
+                    FROM_POST => db.Likes.FirstOrDefault(l => l.PostId == _like.PostId && l.UserId == user.Id),
+                    FROM_COMMENT => db.Likes.FirstOrDefault(l => l.CommentId == _like.PostId && l.UserId == user.Id),
                     _=> throw new Exception("Неизвестный FromType")
                 };
 

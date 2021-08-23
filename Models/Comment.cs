@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace TrueStoryMVC.Models
 {
-    enum FromType : byte
-    {
-        FROM_POST,
-        FROM_COMMENT
-    }
+    //enum FromType : byte
+    //{
+    //    FROM_POST,
+    //    FROM_COMMENT
+    //}
     public class Comment
     {
         public int Id { get; set; }

@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace TrueStoryMVC.Models
 {
-    enum LikeType : byte
-    {
-        NONE,
-        LIKE,
-        DISLIKE
-    }
+    //enum LikeType : byte
+    //{
+    //    NONE,
+    //    LIKE,
+    //    DISLIKE
+    //}
     public class Like
     {
         public int Id { get; set; }
