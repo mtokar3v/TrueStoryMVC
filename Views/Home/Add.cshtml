@@ -6,9 +6,6 @@
             <input class="form-control" placeholder="Введите заголовок" />
         </div>
         <div class="form-group">
-            <textarea placeholder="Введите текст" class="form-control" style="resize: none "></textarea>
-        </div>
-        <div class="form-group">
             <input placeholder="Введите тэги через пробел" class="form-control" />
         </div>
         <div class="form-group">
@@ -118,16 +115,43 @@
         divUpperImg.remove();
     }
 
+    function deleteText(divUpperText) {
+        divUpperText.remove();
+    }
+
     function addText() {
+        let divText = document.createElement("div");
+        divText.className = "someText row";
+
+        let col2 = document.createElement("div");
+        col2.className = "col-sm-2";
+        let p = document.createElement("p");
+        p.innerHTML = 'x';
+        p.style.textAlign = "center";
+        //сделать более универсальным: поиск по id, а не parent parent
+        p.addEventListener("click", (e) => deleteText(e.target.parentElement.parentElement));
+
+        col2.append(p);
+        divText.append(col2);
+
+        let col10 = document.createElement("div");
+        col10.className = "col-sm-10";
+
         let div = document.createElement("div");
         div.className = "form-group";
+
         let textarea = document.createElement("input");
         textarea.placeholder = "Введите текст";
         textarea.type = "textarea";
         textarea.className = "form-control";
+
         div.append(textarea);
+
+        col10.append(div);
+        divText.append(col10);
+
         let form = document.getElementsByTagName('form')[0];
-        form.lastElementChild.previousElementSibling.previousElementSibling.append(div);
+        form.lastElementChild.previousElementSibling.previousElementSibling.append(divText);
     }
 </script>
 
