@@ -1,17 +1,13 @@
 ﻿@model TrueStoryMVC.Models.ViewModels.PostModel
 
 <div class="col-sm-9">
-    <form asp-action="add" asp-controller="home" enctype="multipart/form-data">
+    <form enctype="multipart/form-data">
         <div class="form-group">
             <input class="form-control" placeholder="Введите заголовок" />
         </div>
         <div class="form-group">
             <textarea placeholder="Введите текст" class="form-control" style="resize: none "></textarea>
         </div>
-        <div class="form-group">
-            <input type="file" onchange="readFile(this)" accept="image/jpeg,image/jpg,image/png" class="form-control-file" multiple />
-        </div>
-
         <div class="form-group">
             <input placeholder="Введите тэги через пробел" class="form-control" />
         </div>
@@ -20,20 +16,43 @@
         </div>
     </form>
 
-
+    <div class="row">
+        <div class="col-sm-6">
+            <button onclick="addText()" class="btn btn-default">Добавать текст</button>
+        </div>
+        <div class="col-sm-6">
+            <input type="file" onchange="readFile(this)" accept="image/jpeg,image/jpg,image/png" class="form-control-file" multiple />
+        </div>
+    </div>
 </div>
 
 
 <script>
-    function binArray() {
-        let images = [];
+
+    function getCounter() {
+        let counter = 0;
+        return function () {
+            return counter++;
+        }
+    }
+    let count = getCounter();
+
+    function addBinArray(images) {
         return function (img) {
             images.push(img);
             return images;
         }
     }
 
-    let addImg = binArray();
+    function delBinArray(images) {
+        return function (id) {
+            delete images[id];
+        }
+    }
+
+    let images = [];
+    let addImg = addBinArray(images);
+    let delImg = delBinArray(images);
 
     function ReadURL(input, i) {
         let file = input.files[i];
@@ -49,19 +68,26 @@
 
               
         div.className = "someImage row";
+        let number = count();
+        div.id = "image-" + number;
+        div.setAttribute("number", number);
         let col2 = document.createElement("div");
         col2.className = "col-sm-2";
         let p = document.createElement("p");
         p.innerHTML = 'x';
         p.style.textAlign = "center";
-        p.addEventListener("click", (e) => e.target.parentElement.parentElement.style.display = 'none');
+
+        //сделать более универсальным: поиск по id, а не parent parent
+        p.addEventListener("click", (e) => deleteImg(e.target.parentElement.parentElement));
         col2.append(p);
         div.append(col2);
         let col10 = document.createElement("div");
         col10.className = "col-sm-10";
         col10.append(img);
         div.append(col10);
-        input.after(div);
+
+        let form = document.getElementsByTagName('form')[0];
+        form.lastElementChild.previousElementSibling.previousElementSibling.append(div);
 
         img.onload = function () {
             let k = img.height / img.width;
@@ -69,7 +95,7 @@
             img.height = 600 * k;
         }
     }
-
+    
     function ReadBinary(input, i) {
         let file = input.files[i];
         let reader = new FileReader();
@@ -82,10 +108,26 @@
 
     function readFile(input) {
         for (let i = 0; i < input.files.length; i++) {
-
             ReadURL(input, i);
             ReadBinary(input, i);
         }
+    }
+
+    function deleteImg(divUpperImg) {
+        delImg(divUpperImg.getAttribute("number"));
+        divUpperImg.remove();
+    }
+
+    function addText() {
+        let div = document.createElement("div");
+        div.className = "form-group";
+        let textarea = document.createElement("input");
+        textarea.placeholder = "Введите текст";
+        textarea.type = "textarea";
+        textarea.className = "form-control";
+        div.append(textarea);
+        let form = document.getElementsByTagName('form')[0];
+        form.lastElementChild.previousElementSibling.previousElementSibling.append(div);
     }
 </script>
 
