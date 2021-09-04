@@ -1,26 +1,39 @@
 ﻿@model TrueStoryMVC.Models.ViewModels.PostModel
 
-<div class="col-sm-9">
-    <form enctype="multipart/form-data">
-        <div class="form-group">
-            <input class="form-control" placeholder="Введите заголовок" />
-        </div>
-        <div class="form-group">
-            <input placeholder="Введите тэги через пробел" class="form-control" />
-        </div>
-        <div class="form-group">
-            <input type="submit" value="Отправить" class="btn btn-default" />
-        </div>
-    </form>
-
+<div class="col-9">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-12">
+            <form enctype="multipart/form-data">
+                <div class="row justify-content-end">
+                    <div class="form-group col-10">
+                        <input class="form-control" placeholder="Введите заголовок" />
+                    </div>
+                </div>
+
+                <div class="row justify-content-end">
+                    <div class="form-group  col-10">
+                        <input placeholder="Введите тэги через пробел" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row justify-content-end">
+                    <div class="form-group  col-10">
+                        <input type="button" value="Отправить" class="btn btn-default" onclick="sendData()"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row justify-content-end">
+        <div class="col-5">
             <button onclick="addText()" class="btn btn-default">Добавать текст</button>
         </div>
-        <div class="col-sm-6">
+        <div class="col-5">
             <input type="file" onchange="readFile(this)" accept="image/jpeg,image/jpg,image/png" class="form-control-file" multiple />
         </div>
     </div>
+
 </div>
 
 
@@ -51,6 +64,15 @@
     let addImg = addBinArray(images);
     let delImg = delBinArray(images);
 
+    function sendData() {
+        let text = [];
+        let divTextArea = document.getElementsByClassName('someText');
+        for (let i = 0; i < divTextArea.length; i++) {
+            let textArea = divTextArea[i].getElementsByTagName('input')[0];
+            console.log(textArea.value);
+        }
+    }
+
     function ReadURL(input, i) {
         let file = input.files[i];
         let reader = new FileReader();
@@ -63,13 +85,13 @@
             img.src = reader.result;
         }
 
-              
+
         div.className = "someImage row";
         let number = count();
         div.id = "image-" + number;
         div.setAttribute("number", number);
         let col2 = document.createElement("div");
-        col2.className = "col-sm-2";
+        col2.className = "col-2";
         let p = document.createElement("p");
         p.innerHTML = 'x';
         p.style.textAlign = "center";
@@ -79,20 +101,21 @@
         col2.append(p);
         div.append(col2);
         let col10 = document.createElement("div");
-        col10.className = "col-sm-10";
+        col10.className = "col-10";
         col10.append(img);
         div.append(col10);
 
         let form = document.getElementsByTagName('form')[0];
-        form.lastElementChild.previousElementSibling.previousElementSibling.append(div);
+        form.lastElementChild.previousElementSibling.previousElementSibling.after(div);
 
         img.onload = function () {
             let k = img.height / img.width;
-            img.width = 600;
-            img.height = 600 * k;
+            let width = document.getElementsByClassName("col-10")[0].clientWidth;
+            img.width = width;
+            img.height = width * k;
         }
     }
-    
+
     function ReadBinary(input, i) {
         let file = input.files[i];
         let reader = new FileReader();
@@ -124,7 +147,7 @@
         divText.className = "someText row";
 
         let col2 = document.createElement("div");
-        col2.className = "col-sm-2";
+        col2.className = "col-2";
         let p = document.createElement("p");
         p.innerHTML = 'x';
         p.style.textAlign = "center";
@@ -135,7 +158,7 @@
         divText.append(col2);
 
         let col10 = document.createElement("div");
-        col10.className = "col-sm-10";
+        col10.className = "col-10";
 
         let div = document.createElement("div");
         div.className = "form-group";
@@ -151,7 +174,7 @@
         divText.append(col10);
 
         let form = document.getElementsByTagName('form')[0];
-        form.lastElementChild.previousElementSibling.previousElementSibling.append(divText);
+        form.lastElementChild.previousElementSibling.previousElementSibling.after(divText);
     }
 </script>
 
