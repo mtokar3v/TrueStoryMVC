@@ -81,9 +81,6 @@
         let header = document.getElementById('header-input').value;
         let tagsline = document.getElementById('tags-input').value;
 
-        console.log(header);
-        console.log(tagsline);
-
         await fetch('/home/CreatePost', {
             method: 'post',
             headers: {
@@ -143,7 +140,7 @@
         reader.readAsArrayBuffer(file);
 
         reader.onloadend = function () {
-            addImg(reader.result);
+            addImg(Array.from(new Uint8Array(reader.result)));
         }
     }
 

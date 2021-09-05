@@ -31,7 +31,10 @@
     <a asp-action="userpage" asp-controller="users" asp-route-username="@Model.Author" style="display: inline; padding: 5% 0 0 5%">@Model.Author</a>
     <p-time post-time=@Model.PostTime class="text-secondary ml-1" style="display: inline" />
     <h2 class="text-secondary" style="padding-left: 5%"><a asp-action="post" asp-controller="home" asp-route-id="@Model.Id">@Model.Header</a></h2>
-    <p class=" text-justify w-100" style="padding: 3% 3% 0 3%">@Model.Text</p>
+    @foreach (Text t in Model.Texts)
+    {
+        <p class=" text-justify w-100" style="padding: 3% 3% 0 3%">@t.TextData</p>
+    }
 
     @{
         if (Model.PostImages.Count != 0)
