@@ -36,7 +36,7 @@ namespace TrueStoryMVC.Controllers
         {
             if (postModel.Texts.Any() || postModel.Images.Any())
             {
-                Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name };
+                Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name, Tags = postModel.TagsLine };
                 db.Posts.Add(post);
                 await db.SaveChangesAsync();
 
@@ -91,36 +91,20 @@ namespace TrueStoryMVC.Controllers
                 }
                 await db.SaveChangesAsync();
 
-                //foreach (var i in postModel.Scheme)
-                //    Console.WriteLine(i);
+                string scheme = string.Empty;
 
+                //передается массив, потом он соединяется, выглядит тупо
+                foreach (var i in postModel.Scheme)
+                {
+                    scheme = String.Concat(scheme, ' ');
+                    scheme = String.Concat(scheme, i);
+                }
+                post.Scheme = scheme;
+                await db.SaveChangesAsync();
                 return Ok();
             }
             return BadRequest();
         }
-
-        //[HttpPost]
-        //[Authorize]
-        //public async Task<IActionResult> Add(PostModel pvm)
-        //{
-        //    
-
-        //    if (pvm.Image != null)
-        //    {
-        //        foreach (IFormFile formFile in pvm.Image)
-        //        {
-        //            
-        //            }
-        //        }
-        //    }
-
-        //    if (!String.IsNullOrEmpty(pvm.TagsLine))
-        //    {
-        //        post.Tags = pvm.TagsLine;
-        //    }
-        //    await db.SaveChangesAsync();
-        //    return RedirectToAction("Hot");
-        //}
 
         public async Task<IActionResult> Delete(int? id)
         {
@@ -177,16 +161,19 @@ namespace TrueStoryMVC.Controllers
 
             IQueryable<Post> p_query = postBlock.PostBlockType switch
             {
-                HOT => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Skip(postBlock.Number * 2).Take(2),
-                BEST => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * 2).Take(2),
-                NEW => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * 2).Take(2),
+                HOT => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Skip(postBlock.Number * 20).Take(20),
+                BEST => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * 20).Take(20),
+                NEW => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * 20).Take(20),
                 _=>throw new Exception("Неизвестный PostBlockType")
             };
 
             var posts = await p_query.ToListAsync();
 
-            foreach(var item in posts)
+            foreach (var item in posts)
+            {
+                await db.Texts.Where(i => i.PostId == item.Id).LoadAsync();
                 await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
+            }
 
             return PartialView("_GetPosts", posts);
         }
@@ -335,6 +322,7 @@ namespace TrueStoryMVC.Controllers
             if (id != null)
             {
                 Post post = await db.Posts.FindAsync(id);
+                await db.Texts.Where(i => i.PostId == post.Id).LoadAsync();
                 await db.Images.Where(i => i.PostId == post.Id).LoadAsync();
                 await db.Comments.Where(c => c.PostId == post.Id).LoadAsync();
                 return View(post);
