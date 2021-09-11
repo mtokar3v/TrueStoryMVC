@@ -9,7 +9,7 @@ namespace TrueStoryMVC.Models
     {
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
-        public DbSet<ImageInfo> Images { get; set; }
+        public DbSet<Picture> Pictures { get; set; }
         public DbSet<Text> Texts { get; set; }
         public DbSet<Like> Likes { get; set; }
 
@@ -20,7 +20,7 @@ namespace TrueStoryMVC.Models
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=tsdb;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=truestorydb;Trusted_Connection=True;");
         }
     }
 }

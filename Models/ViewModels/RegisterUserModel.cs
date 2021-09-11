@@ -9,7 +9,6 @@ namespace TrueStoryMVC.Models.ViewModels
     public class RegisterUserModel
     {
         [Required(ErrorMessage ="Введите Email")]
-      //  [Display(Name = "Email")]
         public string Email { get; set; }
 
         [Required(ErrorMessage ="Введите имя")]

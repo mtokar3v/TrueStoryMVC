@@ -13,7 +13,7 @@ namespace TrueStoryMVC.Models.ViewModels
         public List<string> Texts { get; set; }
         public List<IEnumerable<byte>> Images { get; set; }
         public string TagsLine { get; set; }
-        public List<string> Scheme { get; set; }
+        public string Scheme { get; set; }
         
     }
 }

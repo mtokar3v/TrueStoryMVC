@@ -1,17 +1,38 @@
 ﻿@model TrueStoryMVC.Models.ViewModels.PostModel
 
+<style>
+    .error-message {
+        position: relative;
+        z-index: 1000;
+        text-align: center;
+        width: 100%;
+        margin-bottom: 0em;
+        background-color: rgba(255, 87, 87, 0.6);
+    }
+
+    .error-block {
+        position: absolute;
+        z-index: 1000;
+        width: 100%;
+    }
+</style>
+
 <div class="col-9">
+    <div class="error-block">
+    </div>
     <div class="row">
         <div class="col-12">
             <form enctype="multipart/form-data">
                 <div class="row justify-content-end">
                     <div class="form-group col-10">
+                        <span class="validation-field" id="header-validation"></span>
                         <input id="header-input" class="form-control" placeholder="Введите заголовок" />
                     </div>
                 </div>
 
                 <div class="row justify-content-end">
                     <div class="form-group  col-10">
+                        <span class="validation-field" id="tag-validation"></span>
                         <input id="tags-input" placeholder="Введите тэги через пробел" class="form-control" />
                     </div>
                 </div>
@@ -60,34 +81,106 @@
         }
     }
 
+    function isBlank(str) {
+        return (str.length === 0 || !str.trim());
+    }
+
+    function BlankStringValidate(value, text) {
+        let word = value;
+        if (isBlank(word)) {
+            printError(text);
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    function printError(text) {
+        p = document.createElement('p');
+        let id = 'error' + Math.random();
+        p.id = id;
+        p.className = 'error-message';
+        p.innerHTML = text;
+        document.getElementsByClassName("error-block")[0].append(p);
+        setTimeout(() => document.getElementById(id).remove(), 2000);
+    }
+
+    function BlankBlockValidation() {
+        let result = false;
+
+        //проверка текстовых полей
+        for (let i = 0; i < document.getElementsByClassName('someText').length; i++) {
+            result |= !isBlank(document.getElementsByClassName('someText')[i].getElementsByTagName('input')[i].value);
+        }
+
+        //проверка изображений
+        if (document.getElementsByClassName('someImage').length == 0)
+            result |= false;
+        else
+            result |= true;
+
+
+        if (result == false)
+            printError('Пост должен иметь хотя бы один блок: текст, изображение');
+
+        return result;
+    }
+
+
+
+    function validation() {
+
+        let result = true;
+        //Проверка заголовка
+        result &= BlankStringValidate(document.getElementById('header-input').value, "Введите название заголовка");
+
+        //Проверка тегов
+        result &= BlankStringValidate(document.getElementById('tags-input').value, "Введите теги");
+
+        result &= BlankBlockValidation();
+        let textResult = false;
+        
+
+
+
+        return result;
+    }
+
+
+
+
     let images = [];
     let addImg = addBinArray(images);
     let delImg = delBinArray(images);
 
     async function sendData() {
-        let text = [];
-        let divTextArea = document.getElementsByClassName('someText');
+        if (validation()) {
+            let text = [];
+            let divTextArea = document.getElementsByClassName('someText');
 
-        for (let i = 0; i < divTextArea.length; i++) {
-            text.push(divTextArea[i].getElementsByTagName('input')[0].value);
+            for (let i = 0; i < divTextArea.length; i++) {
+                text.push(divTextArea[i].getElementsByTagName('input')[0].value);
+            }
+
+            let scheme = '';
+            let rows = document.getElementsByClassName('row');
+            for (let i = 0; i < rows.length; i++)
+                if (rows[i].hasAttribute('field-type')) {
+                    scheme += rows[i].getAttribute('field-type') + ' ';
+                }
+
+            let header = document.getElementById('header-input').value;
+            let tagsline = document.getElementById('tags-input').value;
+
+            await fetch('/home/CreatePost', {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ Header: header, Texts: text, Images: images, TagsLine: tagsline, Scheme: scheme })
+            });
         }
-
-        let scheme = [];
-        let rows = document.getElementsByClassName('row');
-        for (let i = 0; i < rows.length; i++)
-            if (rows[i].hasAttribute('field-type'))
-                scheme.push(rows[i].getAttribute('field-type'));
-
-        let header = document.getElementById('header-input').value;
-        let tagsline = document.getElementById('tags-input').value;
-
-        await fetch('/home/CreatePost', {
-            method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ Header: header, Texts: text, Images: images, TagsLine: tagsline, Scheme: scheme })
-        });
     }
 
     function ReadURL(input, i) {

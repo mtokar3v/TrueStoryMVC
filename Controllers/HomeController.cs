@@ -36,7 +36,7 @@ namespace TrueStoryMVC.Controllers
         {
             if (postModel.Texts.Any() || postModel.Images.Any())
             {
-                Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name, Tags = postModel.TagsLine };
+                Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name, Tags = postModel.TagsLine, Scheme = postModel.Scheme };
                 db.Posts.Add(post);
                 await db.SaveChangesAsync();
 
@@ -44,62 +44,15 @@ namespace TrueStoryMVC.Controllers
                 {
                     Text text = new Text { PostId = post.Id, TextData = t };
                     db.Texts.Add(text);
-                    await db.SaveChangesAsync();
                 }
 
                 foreach (var i in postModel.Images)
                 {
-                    //мне эта часть не нравится:
-                    //1) приходится открывать два потока, с одним не работает, так как b.save() плохо работает и не перезаписывает байты(по моему мнению)
-                    // 2) чтобы считать с формы, я сначала из возвращаемого потока stream(метод openreadstream) создаю массив байт, после чего из него создаю поток memorystream
-
-                    byte[] bytes;
-
-                    using (var reader = new MemoryStream(i.ToArray()))
-                    {
-                        using (Image image = Image.FromStream(reader))
-                        {
-
-                            int w = image.Width;
-                            int h = image.Height;
-
-                            double k = (double)h / w;
-                            w = 600;
-                            h = (int)(w * k);
-
-                            using (Bitmap b = new Bitmap(image, w, h))
-                            {
-                                using (var reader2 = new MemoryStream())
-                                {
-                                    b.Save(reader2, System.Drawing.Imaging.ImageFormat.Jpeg);
-                                    bytes = new byte[reader2.ToArray().Length];
-                                    bytes = reader2.ToArray();
-                                }
-                            }
-
-                            ImageInfo img = new ImageInfo()
-                            {
-                                Data = bytes,
-                                Width = w,
-                                Height = h,
-                                PostId = post.Id
-                            };
-
-                            db.Images.Add(img);
-                        }
-                    }
+                    Picture pic = new Picture();
+                    pic.Data = i.ToArray();
+                    pic.PostId = post.Id;
+                    db.Pictures.Add(pic);
                 }
-                await db.SaveChangesAsync();
-
-                string scheme = string.Empty;
-
-                //передается массив, потом он соединяется, выглядит тупо
-                foreach (var i in postModel.Scheme)
-                {
-                    scheme = String.Concat(scheme, ' ');
-                    scheme = String.Concat(scheme, i);
-                }
-                post.Scheme = scheme;
                 await db.SaveChangesAsync();
                 return Ok();
             }
@@ -146,7 +99,7 @@ namespace TrueStoryMVC.Controllers
                     posts = await db.Posts.Where(p => p.Tags.Contains(s)).ToListAsync();
 
                 foreach (var p in posts)
-                    await db.Images.Where(i => i.PostId == p.Id).LoadAsync();
+                    await db.Pictures.Where(i => i.PostId == p.Id).LoadAsync();
             }
             return View(posts);
         }
@@ -172,7 +125,7 @@ namespace TrueStoryMVC.Controllers
             foreach (var item in posts)
             {
                 await db.Texts.Where(i => i.PostId == item.Id).LoadAsync();
-                await db.Images.Where(i => i.PostId == item.Id).LoadAsync();
+                await db.Pictures.Where(i => i.PostId == item.Id).LoadAsync();
             }
 
             return PartialView("_GetPosts", posts);
@@ -323,7 +276,7 @@ namespace TrueStoryMVC.Controllers
             {
                 Post post = await db.Posts.FindAsync(id);
                 await db.Texts.Where(i => i.PostId == post.Id).LoadAsync();
-                await db.Images.Where(i => i.PostId == post.Id).LoadAsync();
+                await db.Pictures.Where(i => i.PostId == post.Id).LoadAsync();
                 await db.Comments.Where(c => c.PostId == post.Id).LoadAsync();
                 return View(post);
             }
