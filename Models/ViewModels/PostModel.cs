@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-
+﻿using System.Collections.Generic;
+using TrueStoryMVC.Services;
 
 namespace TrueStoryMVC.Models.ViewModels
 {
@@ -15,5 +11,45 @@ namespace TrueStoryMVC.Models.ViewModels
         public string TagsLine { get; set; }
         public string Scheme { get; set; }
         
+        public ValidateResult Validate()
+        {
+            ValidateResult result = new ValidateResult();
+
+            List<IValidate> mandatoryValidates = new List<IValidate>();
+            mandatoryValidates.Add(new BlankHeaderValidate(Header));
+            mandatoryValidates.Add(new BlankTagValidate(TagsLine));
+
+            List<IValidate> optionalValidates = new List<IValidate>();
+            optionalValidates.Add(new ImageValidate(Images));
+            optionalValidates.Add(new TextValidate(Texts));
+
+            bool flag = false;
+
+            bool mandatoryResult = true;
+            foreach (var v in mandatoryValidates)
+            {
+                flag = v.isValid();
+                if (flag == false)
+                    result.ErrorList.Add(v.ErrorMessage);
+
+                mandatoryResult &= flag;
+            }
+
+            bool optionalResult = false;
+
+            foreach (var v in optionalValidates)
+            {
+                flag = v.isValid();
+
+                if (flag == false)
+                    if (result.ErrorList.Count != 0 && !result.ErrorList[result.ErrorList.Count - 1].Equals(v.ErrorMessage))
+                        result.ErrorList.Add(v.ErrorMessage);
+                optionalResult |= flag;
+            }
+
+            result.IsValid = optionalResult && mandatoryResult;
+
+            return result;
+        }
     }
 }

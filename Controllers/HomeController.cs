@@ -34,7 +34,7 @@ namespace TrueStoryMVC.Controllers
 
         public async Task<IActionResult> CreatePost([FromBody] PostModel postModel)
         {
-            if (postModel.Texts.Any() || postModel.Images.Any())
+            if (postModel.Validate().IsValid)
             {
                 Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name, Tags = postModel.TagsLine, Scheme = postModel.Scheme };
                 db.Posts.Add(post);
@@ -56,6 +56,7 @@ namespace TrueStoryMVC.Controllers
                 await db.SaveChangesAsync();
                 return Ok();
             }
+
             return BadRequest();
         }
 

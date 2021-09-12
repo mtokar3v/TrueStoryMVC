@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TrueStoryMVC</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
-
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <title>@ViewData["Title"]</title>
 </head>
 <body class="bg-light">
@@ -16,7 +15,7 @@
                 <a class="nav-link" asp-action="hot" asp-controller="home">Горячее</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link"asp-action="best" asp-controller="home">Лучшее</a>
+                <a class="nav-link" asp-action="best" asp-controller="home">Лучшее</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" asp-action="new" asp-controller="home">Свежее</a>
@@ -26,36 +25,38 @@
             </li>
         </ul>
     </nav>
-        <div class="container">
-            <div class="row">
-                @RenderBody()
-                <div class="col-sm-3">
-                    @{
-                        if (User.Identity.IsAuthenticated)
-                        {
-                            <p></p>
-                            <p>@User.Identity.Name</p>
-                            <form method="post" asp-controller="Account" asp-action="Logout">
-                                <input type="submit" value="Выход" />
-                            </form>
-                        }
-                        else
-                        {
-                            <a asp-controller="Account" asp-action="Login">Вход</a>
-                            <a asp-controller="Account" asp-action="Register">Регистрация</a>
-                        }
+    <div class="container">
+        <div class="row">
+            @* Сделать красиво *@
+            <noscript>Подключите JavaScript</noscript>
+            @RenderBody()
+            <div class="col-sm-3">
+                @{
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        <p></p>
+                        <p>@User.Identity.Name</p>
+                        <form method="post" asp-controller="Account" asp-action="Logout">
+                            <input type="submit" value="Выход" />
+                        </form>
                     }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login">Вход</a>
+                        <a asp-controller="Account" asp-action="Register">Регистрация</a>
+                    }
+                }
 
-                    <form asp-action="Tag" asp-controller="Home">
-                        <input asp-action="Tag" asp-controller="Home" name="SomeTags" placeholder="Введите тэги через пробел" />
-                        <input type="submit" value="Поиск">
-                    </form>
-                </div>
+                <form asp-action="Tag" asp-controller="Home">
+                    <input asp-action="Tag" asp-controller="Home" name="SomeTags" placeholder="Введите тэги через пробел" />
+                    <input type="submit" value="Поиск">
+                </form>
             </div>
         </div>
-            <script src="~/lib/jquery/dist/jquery.min.js"></script>
-            <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="~/js/site.js" asp-append-version="true"></script>
-            @RenderSection("Scripts", required: false)
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>
