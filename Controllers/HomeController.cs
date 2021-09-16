@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using TrueStoryMVC.Models;
 using TrueStoryMVC.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
-using System.Drawing;   
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -155,7 +154,6 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<JsonResult> Like([FromBody] LikeModel like)
         {
-            Console.WriteLine(like.PostId);
             if (HttpContext.User.Identity.IsAuthenticated)
             {
                 const byte FROM_POST = 0;

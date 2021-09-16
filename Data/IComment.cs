@@ -1,9 +1,8 @@
 ﻿using System;
-using TrueStoryMVC.Data;
 
-namespace TrueStoryMVC.Models
+namespace TrueStoryMVC.Data
 {
-    public class Comment : IComment
+    interface IComment
     {
         public int Id { get; set; }
         public int FromId { get; set; }

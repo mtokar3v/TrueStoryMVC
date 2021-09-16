@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using TrueStoryMVC.Data;
+using TrueStoryMVC.Models;
 
-namespace TrueStoryMVC.Models
+namespace TrueStoryMVC.Data
 {
-    public class Post : IPost
+    interface IPost
     {
         public int Id { get; set; }
         public string Header { get; set; }
@@ -12,9 +12,9 @@ namespace TrueStoryMVC.Models
         public string Author { get; set; }
         public DateTime PostTime { get; set; }
         public string Tags { get; set; }
-        public List<Text> Texts { get; set; } = new List<Text>();
-        public List<Comment> comments { get; set; } = new List<Comment>();
-        public List<Picture> Pictures { get; set; } = new List<Picture>();
+        public List<Text> Texts { get; set; }
+        public List<Comment> comments { get; set; } 
+        public List<Picture> Pictures { get; set; }
         public string Scheme { get; set; }
     }
 }

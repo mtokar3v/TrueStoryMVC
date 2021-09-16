@@ -1,8 +1,6 @@
-﻿using TrueStoryMVC.Data;
-
-namespace TrueStoryMVC.Models
+﻿namespace TrueStoryMVC.Data
 {
-    public class Text : IText
+    interface IText
     {
         public int Id { get; set; }
         public int PostId { get; set; }

@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using TrueStoryMVC.Data;
 
 namespace TrueStoryMVC.Models
 {
-    public class Picture
+    public class Picture : IPicture
     {
         public int Id { get; set; }
         public int Height { get; set; }
         public int Width { get; set; }
-        //public byte[] Data { get; set; }
-
         private byte[] data;
         public byte[] Data
         {

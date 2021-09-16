@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+﻿using TrueStoryMVC.Data;
 namespace TrueStoryMVC.Models
 {
-    //enum LikeType : byte
-    //{
-    //    NONE,
-    //    LIKE,
-    //    DISLIKE
-    //}
-    public class Like
+    public class Like : ILike
     {
         public int Id { get; set; }
         public string UserId { get; set; }
