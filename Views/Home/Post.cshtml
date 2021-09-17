@@ -39,7 +39,7 @@
                                 <path fill-rule="evenodd" d="M8 4.5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5z" />
                             </svg>
                         </span>
-                        <span class="text-secondary"><a asp-action="userpage" asp-controller="users" asp-route-username="@com.FromName">@com.FromName</a></span>
+                        <span class="text-secondary"><a asp-action="userpage" asp-controller="users" asp-route-username="@com.Author">@com.Author</a></span>
                         <p-time post-time=@com.PostTime class="text-secondary ml-1" />
                         <pre style="overflow: hidden;" class="mt-3">@com.Text</pre>
                     </div>
