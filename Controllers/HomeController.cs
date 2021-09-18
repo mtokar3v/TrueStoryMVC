@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,12 +10,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace TrueStoryMVC.Controllers
 {
     public class HomeController : Controller
     {
         private ApplicationContext db;
+        private IMemoryCache cache;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<HomeController> _logger;
 
@@ -58,6 +59,7 @@ namespace TrueStoryMVC.Controllers
                         db.Pictures.Add(pic);
                     }
                     await db.SaveChangesAsync();
+
 
                     return Ok();
                 }
@@ -109,7 +111,7 @@ namespace TrueStoryMVC.Controllers
         }
         public async Task<IActionResult> Tag(string SomeTags)
         {
-            List<Post> posts = null;
+            List<Post> posts = null; 
             if (!String.IsNullOrEmpty(SomeTags))
             {
                 try
@@ -119,7 +121,10 @@ namespace TrueStoryMVC.Controllers
                         posts = await db.Posts.Where(p => p.Tags.Contains(s)).ToListAsync();
 
                     foreach (var p in posts)
+                    {
                         await db.Pictures.Where(i => i.PostId == p.Id).LoadAsync();
+                        await db.Texts.Where(i => i.PostId == p.Id).LoadAsync();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -149,6 +154,9 @@ namespace TrueStoryMVC.Controllers
                 };
 
                 posts = await p_query.ToListAsync();
+                if (!posts.Any())
+                    return Ok();
+
 
                 foreach (var item in posts)
                 {
@@ -165,6 +173,7 @@ namespace TrueStoryMVC.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Comment([FromForm] CommentModel comment)
         {
             if (User.Identity.IsAuthenticated)
@@ -172,7 +181,13 @@ namespace TrueStoryMVC.Controllers
                 try
                 {
                     User user = await _userManager.FindByNameAsync(User.Identity.Name);
-                    Comment newComment = new Comment { Text = comment.Text, Author = user.UserName, PostTime = DateTime.Now.ToUniversalTime(), PostId = comment.PostId };
+                    if (user != null)
+                        user.CommentCount++;
+                    else
+                        throw new Exception("unauthoruzed");
+
+                    Comment newComment = new Comment { Text = comment.Text, Author = HttpContext.User.Identity.Name, PostTime = DateTime.Now.ToUniversalTime(), PostId = comment.PostId };
+                    db.Users.Update(user);
                     db.Comments.Add(newComment);
                     await db.SaveChangesAsync();
                     return Ok();
@@ -196,10 +211,22 @@ namespace TrueStoryMVC.Controllers
                 const byte FROM_COMMENT = 1;
 
                 int result;
-                //cache!!!!!!!!!!!
                 try
                 {
-                    User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                    User user = null;
+
+                    //поиск в кэше по имени
+                    if(!cache.TryGetValue(HttpContext.User.Identity.Name, out user))
+                    {
+                        user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                        if(user != null)
+                        {
+                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                            opt.Priority = CacheItemPriority.High;
+                            cache.Set(user.UserName, user, opt);
+                        }
+                    }
+                    
                     Like _like;
 
                     _like = like.FromType switch

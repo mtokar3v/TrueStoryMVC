@@ -134,13 +134,13 @@ async function getPostBlock(type) {
         body: JSON.stringify({ PostBlockType: type, Number: number })
     });
 
-    let div = this.document.createElement('div');
-    div.id = 'post-block-' + number;
-    div.innerHTML = await responce.text();
-    document.getElementsByClassName('col-md-9')[0].append(div);
-    console.log(div);
-    await ColorPostLike(div); 
-    
+    if (responce.json != null) {
+        let div = this.document.createElement('div');
+        div.id = 'post-block-' + number;
+        div.innerHTML = await responce.text();
+        document.getElementsByClassName('col-md-9')[0].append(div);
+        await ColorPostLike(div);
+    }
 }
 
 async function postArticle(postId) {

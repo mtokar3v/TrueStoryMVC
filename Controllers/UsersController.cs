@@ -31,7 +31,10 @@ namespace TrueStoryMVC.Controllers
         {
             User user = new User();
             user = await _userManager.FindByNameAsync(userName);
-            return View(user);
+            if (user != null)
+                return View(user);
+            else
+                return NotFound();
         }
     }
 }

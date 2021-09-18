@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using TrueStoryMVC.Models;
 using TrueStoryMVC.Models.ViewModels;
 using TrueStoryMVC.Services;
@@ -12,11 +13,13 @@ namespace TrueStoryMVC.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private IMemoryCache _cache;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IMemoryCache cache)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _cache = cache;
         }
         [HttpGet]
         public IActionResult Register()
@@ -105,6 +108,7 @@ namespace TrueStoryMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            _cache.Dispose();
             await _signInManager.SignOutAsync();
             return RedirectToAction("Hot", "Home");
         }

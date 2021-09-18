@@ -2,5 +2,5 @@
 
 <div class="col-md-9">
     <p>Найдено постов: @Model.Count()</p>
-    @{await Html.RenderPartialAsync("_GetPosts");}
+    @{await Html.RenderPartialAsync("_GetPosts", Model);}
 </div>

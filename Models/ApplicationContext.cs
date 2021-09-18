@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Drawing;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace TrueStoryMVC.Models
 {

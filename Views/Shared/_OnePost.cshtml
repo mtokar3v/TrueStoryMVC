@@ -29,7 +29,7 @@
 </div>
 <div class="col-sm-10 border mt-1 p-1" style="background-color: white" post-id="@Model.Id">
     <a asp-action="userpage" asp-controller="users" asp-route-username="@Model.Author" style="display: inline; padding: 5% 0 0 5%">@Model.Author</a>
-    <p-time post-time=@Model.PostTime class="text-secondary ml-1" style="display: inline" />
+    <p-time post-time=@Model.PostTime class="text-secondary ml-1" />
     <h2 class="text-secondary" style="padding-left: 5%"><a asp-action="post" asp-controller="home" asp-route-id="@Model.Id">@Model.Header</a></h2>
 
     @{

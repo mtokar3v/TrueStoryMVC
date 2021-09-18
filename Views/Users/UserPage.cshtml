@@ -1,11 +1,31 @@
 ﻿@model TrueStoryMVC.Models.User
-<div class="col-sm-9">
-    <div class="bg-secondary" style="height: 300px">
-    @if(Model.ProfilePhoto == null)
-    {
-        <img class="rounded-circle border " src="~/user_pic.jpg">
-    }
+<div class="col-9">
+    <div class="infoBlock">
+        <div class="bg-secondary row" style="height: 300px">
+            @if (Model.ProfilePhoto == null)
+            {
+                <img class="rounded-circle border " src="~/user_pic.jpg">
+            }
+        </div>
+        <h2><a asp-controller="users" asp-action="UserPage" asp-route-userName="@Model.UserName">@Model.UserName</a></h2>
+        <p>Зарегистрирован: </p><p-time post-time="@Model.RegisterTime"/>
+        <div class="row">
+            <div class="col-4">
+                <h4>@Model.Rating</h4>
+                <p>рейтинг</p>
+            </div>
+            <div class="col-4">
+                <h4>0</h4>
+                <p>подписчиков</p>
+            </div>
+            <div class="col-4">
+                <h4>@Model.CommentCount</h4>
+                <p>комментариев</p>
+            </div>
+            <div class="col-4">
+                <h4>@Model.</h4>
+            </div>
+            
+        </div>
     </div>
-    <h2>@Model.UserName</h2>
-    <p>@Model.Rating</p>
 </div>
