@@ -1,28 +1,40 @@
 ﻿@model TrueStoryMVC.Models.Post
 
-<div class="col-md-9">
+<style>
+    pre {
+        white-space: pre-wrap;
+    }
+</style>
+
+<div class="col-9 content">
     <div class="row">
         @{await Html.RenderPartialAsync("_OnePost", Model);}
 
 
     </div>
-    <div class="row">
-        <div class="col-md-2"></div>
-        <form id="formElem-@Model.Id" onsubmit="postArticle(@Model.Id)">
-            <input type="hidden" name="PostId" value="@Model.Id" />
-            <input type="text" name="Text" />
-            <input type="submit" value="Отправить">
-        </form>
+    <div class="row flex-row-reverse">
+        <div class="col-10 mt-3">
+            <form id="formElem-@Model.Id" onsubmit="postArticle()">
+                    <div class="form-group">
+                        <input type="hidden" name="PostId" value="@Model.Id" class="form-control" />
+                    </div>
+                    <div class="form-group w-100">
+                        <textarea name="Text" class="form-control autotextarea" id="text-input" placeholder="Введите комментарий"></textarea>
+                    </div>
+                    <div class="form-group w-25">
+                        <input type="submit" value="Отправить" class="form-control btn btn-primary">
+                    </div>
+            </form>
+        </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-2"></div>
-        <div id="post-comment-block">
+    <div class="row flex-row-reverse">
+        <div class="col-10" id="post-comment-block" >
             @if (Model.comments.Count != 0)
             {
                 foreach (var com in Model.comments)
                 {
-                    <div class="someComment border rounded mt-1 p-1" style="line-height: 10px" post-id="@Model.Id" comment-id="@com.Id">
+                    <div class="someComment border rounded mt-1 p-1" post-id="@Model.Id" comment-id="@com.Id">
                         <span id="comment-rating-@com.Id" class="rating">@com.Rating</span>
 
                         <span class="like-button" title="Мне нравится">
@@ -41,7 +53,7 @@
                         </span>
                         <span class="text-secondary"><a asp-action="userpage" asp-controller="users" asp-route-username="@com.Author">@com.Author</a></span>
                         <p-time post-time=@com.PostTime class="text-secondary ml-1" />
-                        <pre style="overflow: hidden;" class="mt-3">@com.Text</pre>
+                        <pre class="mt-3 comment-text">@com.Text</pre>
                     </div>
                 }
             }
@@ -53,5 +65,53 @@
 
 <script src="~/js/PostStaff.js"></script>
 <script>
-    window.onload = () => { ColorPostLike(document); ColorCommentLike();}
+    window.onload = () => { ColorPostLike(document); ColorCommentLike(); }
+
+    var textarea = document.querySelector('textarea');
+
+    textarea.addEventListener('keyup', function () {
+        if (this.scrollTop > 0) {
+            this.style.height = this.scrollHeight + "px";
+        }
+    });
+
+    async function postArticle() {
+
+    event.preventDefault();
+    var Article = new FormData(this.event.target);
+
+    if (!isBlank(Article.get('Text'))) {
+
+        let responce = await fetch('/home/comment', {
+            method: "POST",
+            body: Article
+        })
+
+        if (responce.status != 401) {
+            document.getElementById('text-input').value = '';
+
+            let div = document.createElement('div');
+            div.className = "border rounded mt-1 p-1";
+            let span = document.createElement('span');
+            span.className = "text-secondary";
+            let fromName = '@(User.Identity.Name)';
+            let ref = document.createElement('a');
+            ref.href = '/users/userpage?username=' + fromName;
+            ref.append(document.createTextNode(fromName));
+            span.append(ref);
+            span.append(document.createTextNode(' сейчас'));
+            div.append(span);
+            let pre = document.createElement('pre');
+            pre.className = "mt-3";
+            pre.style = "overflow:hidden;";
+            pre.innerHTML = Article.get('Text');
+            div.append(pre);
+            document.getElementById('post-comment-block').append(div);
+        }
+        else
+            window.location.href = 'account/login';
+    }
+
+    document.getElementsByTagName('textarea')[0].style.height = '100%';
+}
 </script>

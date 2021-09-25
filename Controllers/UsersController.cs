@@ -29,12 +29,17 @@ namespace TrueStoryMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> UserPage(string userName)
         {
-            User user = new User();
-            user = await _userManager.FindByNameAsync(userName);
-            if (user != null)
-                return View(user);
+            if (!string.IsNullOrEmpty(userName))
+            {
+                User user = new User();
+                user = await _userManager.FindByNameAsync(userName);
+                if (user != null)
+                    return View(user);
+                else
+                    return NotFound();
+            }
             else
-                return NotFound();
+                return RedirectToAction("hot");
         }
     }
 }

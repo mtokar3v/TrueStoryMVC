@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TrueStoryMVC</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <title>@ViewData["Title"]</title>
 </head>
 <body class="bg-light">
@@ -26,18 +26,17 @@
         </ul>
     </nav>
     <div class="container">
-        <div class="row">
+        <div class="row justify-content-end">
             @* Сделать красиво *@
             <noscript>Подключите JavaScript</noscript>
             @RenderBody()
-            <div class="col-sm-3">
+            <div class="col-3">
                 @{
                     if (User.Identity.IsAuthenticated)
                     {
-                        <p></p>
-                        <p>@User.Identity.Name</p>
+                        <p><a asp-controller="Users" asp-action="UserPage" asp-route-userName="@User.Identity.Name">@User.Identity.Name</a></p>
                         <form method="post" asp-controller="Account" asp-action="Logout">
-                            <input type="submit" value="Выход" />
+                            <input class="btn btn-link" type="submit" value="Выход" />
                         </form>
                     }
                     else
@@ -47,16 +46,19 @@
                     }
                 }
 
+
+
                 <form asp-action="Tag" asp-controller="Home">
                     <input asp-action="Tag" asp-controller="Home" name="SomeTags" placeholder="Введите тэги через пробел" />
                     <input type="submit" value="Поиск">
                 </form>
+
+                <div class="bg-primary p-3 text-center rounded mt-3"><a asp-action="Add" asp-controller="home" class="text-light">Новый пост</a></div>
             </div>
         </div>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

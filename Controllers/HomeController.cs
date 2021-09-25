@@ -11,22 +11,22 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
+using TrueStoryMVC.Services;
 
 namespace TrueStoryMVC.Controllers
 {
     public class HomeController : Controller
     {
         private ApplicationContext db;
-        private IMemoryCache cache;
+        private IMemoryCache _cache;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<HomeController> _logger;
-
-
-        public HomeController(ApplicationContext dbContext, UserManager<User> userManager, ILogger<HomeController> logger)
+        public HomeController(ApplicationContext dbContext, UserManager<User> userManager, ILogger<HomeController> logger, IMemoryCache cache)
         {
             _logger = logger;
             _userManager = userManager;
             db = dbContext;
+            _cache = cache;
         }
 
         [Authorize]
@@ -37,7 +37,7 @@ namespace TrueStoryMVC.Controllers
 
         public async Task<IActionResult> CreatePost([FromBody] PostModel postModel)
         {
-            if (postModel.Validate().IsValid)
+            if (postModel.Validate().IsValid && User.Identity.IsAuthenticated)
             {
                 try
                 {
@@ -58,9 +58,24 @@ namespace TrueStoryMVC.Controllers
                         pic.PostId = post.Id;
                         db.Pictures.Add(pic);
                     }
+
+                    User user = null;
+                    //поиск в кэше по имени
+                    if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
+                    {
+                        user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                        if (user != null)
+                        {
+                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                            opt.Priority = CacheItemPriority.High;
+                            _cache.Set(user.UserName, user, opt);
+                        }
+                    }
+
+                    user.PostCount++;
+                    db.Users.Update(user);
+
                     await db.SaveChangesAsync();
-
-
                     return Ok();
                 }
                 catch (Exception ex)
@@ -109,29 +124,9 @@ namespace TrueStoryMVC.Controllers
         {
             return View();
         }
-        public async Task<IActionResult> Tag(string SomeTags)
+        public IActionResult Tag(string SomeTags)
         {
-            List<Post> posts = null; 
-            if (!String.IsNullOrEmpty(SomeTags))
-            {
-                try
-                {
-                    string[] tagArray = SomeTags.Split(new char[] { ' ', ',', ';' });
-                    foreach (string s in tagArray)
-                        posts = await db.Posts.Where(p => p.Tags.Contains(s)).ToListAsync();
-
-                    foreach (var p in posts)
-                    {
-                        await db.Pictures.Where(i => i.PostId == p.Id).LoadAsync();
-                        await db.Texts.Where(i => i.PostId == p.Id).LoadAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-                }
-            }
-            return View(posts);
+            return View("Tag",SomeTags);
         }
 
         public async Task<IActionResult> GetPostBlock([FromBody] PostBlockInfo postBlock)
@@ -139,24 +134,26 @@ namespace TrueStoryMVC.Controllers
             const byte HOT = 0;
             const byte BEST = 1;
             const byte NEW = 2;
+            const byte TAGS = 3;
+            const byte USER = 4;
 
-            DateTime time = DateTime.UtcNow;
             List<Post> posts;
             try
-            {
-
-                IQueryable<Post> p_query = postBlock.PostBlockType switch
+            { 
+                IPostGetter postGetter = postBlock.PostBlockType switch
                 {
-                    HOT => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.comments.Count).Skip(postBlock.Number * 20).Take(20),
-                    BEST => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * 20).Take(20),
-                    NEW => db.Posts.Where(t => t.PostTime.Day + 1 > time.Day && t.PostTime.Month == time.Month && t.PostTime.Year == time.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * 20).Take(20),
+                    HOT => new HotPostGetter(),
+                    BEST => new BestPostGetter(),
+                    NEW => new NewPostGetter(),
+                    TAGS => new TagsPostGetter(),
+                    USER => new UserPostGetter(),
                     _ => throw new Exception("Неизвестный PostBlockType")
                 };
 
-                posts = await p_query.ToListAsync();
-                if (!posts.Any())
-                    return Ok();
+                posts = await postGetter.GetPosts(db, postBlock).ToListAsync();
 
+                if (posts == null)
+                    return Ok();
 
                 foreach (var item in posts)
                 {
@@ -180,7 +177,19 @@ namespace TrueStoryMVC.Controllers
             {
                 try
                 {
-                    User user = await _userManager.FindByNameAsync(User.Identity.Name);
+                    User user = null;
+
+                    if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
+                    {
+                        user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                        if (user != null)
+                        {
+                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                            opt.Priority = CacheItemPriority.High;
+                            _cache.Set(user.UserName, user, opt);
+                        }
+                    }
+
                     if (user != null)
                         user.CommentCount++;
                     else
@@ -214,29 +223,15 @@ namespace TrueStoryMVC.Controllers
                 try
                 {
                     User user = null;
+                    user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
 
-                    //поиск в кэше по имени
-                    if(!cache.TryGetValue(HttpContext.User.Identity.Name, out user))
-                    {
-                        user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                        if(user != null)
-                        {
-                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
-                            opt.Priority = CacheItemPriority.High;
-                            cache.Set(user.UserName, user, opt);
-                        }
-                    }
-                    
-                    Like _like;
-
-                    _like = like.FromType switch
+                    Like _like = like.FromType switch
                     {
                         FROM_POST => await db.Likes.FirstOrDefaultAsync(l => l.PostId == like.PostId && l.UserId == user.Id),
                         FROM_COMMENT => await db.Likes.FirstOrDefaultAsync(l => l.CommentId == like.PostId && l.UserId == user.Id),
                         _ => throw new Exception("unknown like type")
                     };
 
-                    Console.WriteLine("yy");
                     if (_like == null)
                     {
                         _like = new Like { LikeType = like.LikeType, UserId = user.Id };
@@ -254,10 +249,10 @@ namespace TrueStoryMVC.Controllers
                     }
                     else if (_like.LikeType != like.LikeType)
                     {
-                        _like.LikeType = like.LikeType;
+                        _like.LikeType = like.LikeType;                       
+                        result = _like.likeCalculate(2);
                         db.Likes.Update(_like);
                         await db.SaveChangesAsync();
-                        result = _like.likeCalculate(2);
                     }
                     else
                         result = 0;
@@ -266,27 +261,49 @@ namespace TrueStoryMVC.Controllers
                     {
                         User author;
 
-                        //не помешал бы класс который все это делает обобщенно
-
                         if (like.FromType == FROM_POST)
                         {
                             Post post = await db.Posts.FindAsync(like.PostId);
+
+
                             author = await _userManager.FindByNameAsync(post.Author);
+
+
                             post.Rating += result;
                             author.Rating += result;
+
                             db.Posts.Update(post);
+                            await db.SaveChangesAsync();
                         }
                         else if (like.FromType == FROM_COMMENT)
                         {
                             Comment comment = await db.Comments.FindAsync(like.PostId);
+
+
                             author = await _userManager.FindByNameAsync(comment.Author);
+
+
                             comment.Rating += result;
                             author.Rating += result;
                             db.Comments.Update(comment);
+                            await db.SaveChangesAsync();
                         }
                         else
                             throw new Exception("unknown post type");
 
+                        db.Users.Update(author);
+                        await db.SaveChangesAsync();
+
+                        switch (result)
+                        {
+                            case -2: user.DisLikeCount++; user.LikeCount--; break;
+                            case -1: user.DisLikeCount--; break;
+                            case 1: user.LikeCount++; break;
+                            case 2: user.LikeCount++; user.DisLikeCount--; break;
+                        }
+
+                        
+                        db.Users.Update(user);
                         await db.SaveChangesAsync();
                     }
                     return Json(new { result = result });
@@ -309,8 +326,18 @@ namespace TrueStoryMVC.Controllers
 
                 try
                 {
-                    //в like должен быть username, а не id. Либо id должен быть int, а не string
-                    User user = await _userManager.FindByNameAsync(User.Identity.Name);
+                    User user = null;
+                    //поиск в кэше по имени
+                    if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
+                    {
+                        user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                        if (user != null)
+                        {
+                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                            opt.Priority = CacheItemPriority.High;
+                            _cache.Set(user.UserName, user, opt);
+                        }
+                    }
 
                     Like like = _like.FromType switch
                     {

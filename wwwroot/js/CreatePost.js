@@ -19,6 +19,10 @@ function delBinArray(images) {
     }
 }
 
+function isBlank(str) {
+    return (str.length === 0 || !str.trim());
+}
+
 let images = [];
 let addImg = addBinArray(images);
 let delImg = delBinArray(images);
@@ -26,10 +30,14 @@ let delImg = delBinArray(images);
 async function sendData() {
     if (validation()) {
         let text = [];
-        let divTextArea = document.getElementsByClassName('someText');
+        let TextArea = document.getElementsByTagName('textarea');
 
-        for (let i = 0; i < divTextArea.length; i++) {
-            text.push(divTextArea[i].getElementsByTagName('input')[0].value);
+        for (let i = 0; i < TextArea.length; i++) {
+            if (!isBlank(TextArea[i].value)) {
+                text.push(TextArea[i].value);
+            }
+            else
+                TextArea[i].removeAttribute('field-type');
         }
 
         let scheme = '';
@@ -145,10 +153,15 @@ function addText() {
     let div = document.createElement("div");
     div.className = "form-group";
 
-    let textarea = document.createElement("input");
+    let textarea = document.createElement("textarea");
     textarea.placeholder = "Введите текст";
-    textarea.type = "textarea";
-    textarea.className = "form-control";
+    textarea.className = "form-control autotextarea";
+
+    textarea.addEventListener('keyup', function () {
+        if (this.scrollTop > 0) {
+            this.style.height = this.scrollHeight + "px";
+        }
+    });
 
     div.append(textarea);
 

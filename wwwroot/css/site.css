@@ -12,3 +12,22 @@
     z-index: 1000;
     width: 100%;
 }
+
+.autotextarea{
+    overflow:hidden;
+    resize: none;
+}
+
+body{
+    background-color: #F5F5F5;
+}
+
+a {
+    text-decoration: none;
+    color: #212121;
+}
+
+a:hover {
+    color: #272727;
+    text-decoration: none;
+}

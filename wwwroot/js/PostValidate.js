@@ -13,8 +13,8 @@ function BlankBlockValidation() {
     let result = false;
 
     //проверка текстовых полей
-    for (let i = 0; i < document.getElementsByClassName('someText').length; i++) {
-        result |= !isBlank(document.getElementsByClassName('someText')[i].getElementsByTagName('input')[i].value);
+    for (let i = 0; i < document.getElementsByTagName('textarea').length; i++) {
+        result |= !isBlank(document.getElementsByTagName('textarea')[i].value);
     }
 
     //проверка изображений

@@ -1,8 +1,11 @@
 ﻿@model IEnumerable<TrueStoryMVC.Models.Post>
 
+@if (Model != null)
+{
 <div class="row">
     @foreach (Post item in Model)
     {
         await Html.RenderPartialAsync("_OnePost", item);
     }
 </div>
+}

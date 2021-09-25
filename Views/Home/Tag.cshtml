@@ -1,6 +1,11 @@
-﻿@model IEnumerable<TrueStoryMVC.Models.Post>
+﻿@model string
 
-<div class="col-md-9">
-    <p>Найдено постов: @Model.Count()</p>
-    @{await Html.RenderPartialAsync("_GetPosts", Model);}
+<div class="col-9 content">
+    <p>Посты по тегу "<span id="tagsLine">@Model</span>"</p>
 </div>
+
+<script src="~/js/PostStaff.js"></script>
+<script>
+    window.onload = getPostBlock(3, document.getElementById('tagsLine').innerHTML);
+    window.addEventListener('scroll', () => getPostBlockAfterScroll(3, document.getElementById('tagsLine').innerHTML), false);
+</script>

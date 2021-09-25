@@ -1,31 +1,49 @@
 ﻿@model TrueStoryMVC.Models.User
+
+<style>
+    .infoBlock {
+        background-color: white;
+    }
+
+    .profile-header {
+        background: linear-gradient(#007bff, pink);
+    }
+
+</style>
+
 <div class="col-9">
-    <div class="infoBlock">
-        <div class="bg-secondary row" style="height: 300px">
-            @if (Model.ProfilePhoto == null)
-            {
-                <img class="rounded-circle border " src="~/user_pic.jpg">
-            }
-        </div>
-        <h2><a asp-controller="users" asp-action="UserPage" asp-route-userName="@Model.UserName">@Model.UserName</a></h2>
-        <p>Зарегистрирован: </p><p-time post-time="@Model.RegisterTime"/>
-        <div class="row">
-            <div class="col-4">
-                <h4>@Model.Rating</h4>
-                <p>рейтинг</p>
+    <div class="row flex-row-reverse">
+        <div class="infoBlock border col-10">
+            <div class="bg-secondary row profile-header align-content-center justify-content-around" style="height: 50%">
+                @if (Model.ProfilePhoto == null)
+                {
+                    <img class="rounded-circle border" style="height: 75%" src="~/user_pic.jpg">
+                }
             </div>
-            <div class="col-4">
-                <h4>0</h4>
-                <p>подписчиков</p>
+            <h2 id="userName">@Model.UserName</h2>
+            <p>На True Story <how-long-sweet post-time="@Model.RegisterTime" /></p>
+            <p>Поставил(а) <span style="color: green"><b>@Model.LikeCount плюсов</b></span>  и <span style="color: red"><b>@Model.DisLikeCount минусов</b></span> </p>
+            <div class="row">
+                <div class="col-auto">
+                    <h4>@Model.Rating</h4>
+                    <p>рейтинг</p>
+                </div>
+                <div class="col-auto">
+                    <h4>@Model.CommentCount</h4>
+                    <p>комментариев</p>
+                </div>
+                <div class="col-auto">
+                    <h4>@Model.PostCount</h4>
+                    <p>постов</p>
+                </div>
             </div>
-            <div class="col-4">
-                <h4>@Model.CommentCount</h4>
-                <p>комментариев</p>
-            </div>
-            <div class="col-4">
-                <h4>@Model.</h4>
-            </div>
-            
+
         </div>
     </div>
 </div>
+
+<script src="~/js/PostStaff.js"></script>
+<script>
+    window.onload = getPostBlock(4, document.getElementById('userName').innerHTML);
+    window.addEventListener('scroll', () => getPostBlockAfterScroll(4, document.getElementById('userName').innerHTML), false);
+</script>
