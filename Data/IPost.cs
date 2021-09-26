@@ -11,7 +11,7 @@ namespace TrueStoryMVC.Data
         public string Tags { get; set; }
         public List<Text> Texts { get; set; }
         public List<Comment> comments { get; set; } 
-        public List<Picture> Pictures { get; set; }
+        public List<PostPicture> Pictures { get; set; }
         public string Scheme { get; set; }
     }
 }

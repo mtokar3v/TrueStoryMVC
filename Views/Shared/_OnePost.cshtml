@@ -73,12 +73,12 @@
                 {
                     if (type == "text")
                     {
-                        <p class=" text-justify w-100" style="padding: 0% 3% 2% 3%">@Model.Texts[textCounter++].TextData</p>
+                        <pre class=" text-justify w-100" style="padding: 0% 3% 2% 3%">@Model.Texts[textCounter++].TextData</pre>
                     }
 
                     if (type == "image")
                     {
-                        <img class="w-100 mx-auto img-fluid" src="data:image/jpeg ;base64,@(Convert.ToBase64String(Model.Pictures[imageCounter++].Data))" />
+                        <img class="w-100 mx-auto img-fluid" src="data:image/jpeg ;base64,@(Convert.ToBase64String(Model.Pictures[imageCounter++].Picture.Data))" />
                     }
                 }
                 <div class="tags-wrapper">

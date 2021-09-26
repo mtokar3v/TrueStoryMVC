@@ -53,8 +53,8 @@ namespace TrueStoryMVC.Controllers
 
                     foreach (var i in postModel.Images)
                     {
-                        Picture pic = new Picture();
-                        pic.Data = i.ToArray();
+                        PostPicture pic = new PostPicture();
+                        pic.Picture.Data = i.ToArray();
                         pic.PostId = post.Id;
                         db.Pictures.Add(pic);
                     }

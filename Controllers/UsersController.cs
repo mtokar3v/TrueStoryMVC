@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using TrueStoryMVC.Models;
+using System.Collections.Generic;
+using TrueStoryMVC.Models.ViewModels;
 
 namespace TrueStoryMVC.Controllers
 {
@@ -40,6 +42,18 @@ namespace TrueStoryMVC.Controllers
             }
             else
                 return RedirectToAction("hot");
+        }
+
+        [HttpPost]
+        public async Task UpdateAvatar([FromBody] OneImage image)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                User user = await _userManager.FindByNameAsync(User.Identity.Name);
+                user.Picture.Data = image.Data.ToArray();
+                await _userManager.UpdateAsync(user);
+
+            }
         }
     }
 }

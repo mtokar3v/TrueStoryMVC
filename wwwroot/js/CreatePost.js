@@ -36,8 +36,9 @@ async function sendData() {
             if (!isBlank(TextArea[i].value)) {
                 text.push(TextArea[i].value);
             }
-            else
-                TextArea[i].removeAttribute('field-type');
+            else {
+                document.getElementsByClassName('someText')[i].removeAttribute('field-type');
+            }
         }
 
         let scheme = '';

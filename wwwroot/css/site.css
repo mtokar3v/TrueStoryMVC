@@ -31,3 +31,7 @@ a:hover {
     color: #272727;
     text-decoration: none;
 }
+
+pre {
+    white-space: pre-wrap;
+}
