@@ -35,3 +35,12 @@ a:hover {
 pre {
     white-space: pre-wrap;
 }
+
+.user-pic-min:hover{
+    border: 2px solid #232323;
+}
+
+#you{
+    display: flex;
+    width: 100%;
+}
