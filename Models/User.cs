@@ -11,7 +11,7 @@ namespace TrueStoryMVC.Models
         public int PostCount { get; set; }
         public int LikeCount { get; set; }
         public int DisLikeCount { get; set; }
-        public SquareImg Picture { get; set; } = new SquareImg();
+        public Img Picture { get; set; }
         public DateTime RegisterTime { get; set; }
         public List<User> Subscribers { get; set;}
         public List<Like> Likes { get; set; }

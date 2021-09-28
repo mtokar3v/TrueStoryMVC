@@ -3,7 +3,7 @@
     public class PostPicture
     {
         public int Id { get; set; }
-        public RectImg Picture { get; set; } = new RectImg();
+        public Img Picture { get; set; }
         public int PostId { get; set; }
     }
 }

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
 using TrueStoryMVC.Services;
+using TrueStoryMVC.Builders;
 
 namespace TrueStoryMVC.Controllers
 {
@@ -50,17 +51,20 @@ namespace TrueStoryMVC.Controllers
                         Text text = new Text { PostId = post.Id, TextData = t };
                         db.Texts.Add(text);
                     }
-
+                        
                     foreach (var i in postModel.Images)
                     {
                         PostPicture pic = new PostPicture();
-                        pic.Picture.Data = i.ToArray();
+                        ImageBuilder builder = new RectImageBuilder();
+                        //ImageConstructor imgC = new ImageConstructor(builder);
+                        //imgC.ConstructImage(i.ToArray());
+                        builder.SetData(i.ToArray());
+                        pic.Picture = builder.GetResult();
                         pic.PostId = post.Id;
                         db.Pictures.Add(pic);
                     }
 
                     User user = null;
-                    //поиск в кэше по имени
                     if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
                     {
                         user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);

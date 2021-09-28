@@ -3,15 +3,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using TrueStoryMVC.Models;
-using System.Collections.Generic;
 using TrueStoryMVC.Models.ViewModels;
+using TrueStoryMVC.Builders;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 
 namespace TrueStoryMVC.Controllers
 {
     public class UsersController : Controller
     {
         UserManager<User> _userManager;
-        public UsersController(UserManager<User> userManager)
+        private IMemoryCache _cache;
+        public UsersController(UserManager<User> userManager, IMemoryCache cache)
         {
             _userManager = userManager;
         }
@@ -50,10 +53,38 @@ namespace TrueStoryMVC.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 User user = await _userManager.FindByNameAsync(User.Identity.Name);
-                user.Picture.Data = image.Data.ToArray();
+                ImageBuilder builder = new SquareImageBuilder();
+                //ImageConstructor constructor = new ImageConstructor(builder);
+                //constructor.ConstructImage(image.Data.ToArray());
+                builder.SetData(image.Data.ToArray());
+                user.Picture = builder.GetResult();
                 await _userManager.UpdateAsync(user);
-
             }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> GetAvatar()
+        {
+
+            //User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+            //byte[] data = new byte[user.Picture.Data.Length];
+            //data = user.Picture.Data;
+
+            Img avatar = null;
+            if (!_cache.TryGetValue("Avatar", out avatar))
+            {
+                User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                avatar = user.Picture;
+
+                if (avatar != null)
+                {
+                    MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                    opt.Priority = CacheItemPriority.High;
+                    _cache.Set("avatar", avatar, opt);
+                }
+            }
+
+            return Json(new { data = avatar.Data });
         }
     }
 }

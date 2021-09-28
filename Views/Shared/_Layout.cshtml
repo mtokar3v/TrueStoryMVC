@@ -34,7 +34,7 @@
                         <div id="you">
                             <div>
                                 <a asp-controller="Users" asp-action="UserPage" asp-route-userName="@User.Identity.Name">
-                                    <img class="rounded-circle user-pic-min" src="~/user_pic.jpg" style="width: 50px">
+                                    <img class="rounded-circle user-pic-min" id="you-pic" src="~/user_pic.jpg" style="width: 50px">
                                 </a>
                             </div>
                             <div>
@@ -67,6 +67,23 @@
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.onload = async function() {
+            let responce = await fetch('/users/getAvatar', {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            let json = await responce.json();
+            let img = document.getElementById('you-pic');
+
+            if(json.data != null) {
+                img.src = "data:image/png;base64," + json.data;
+            }
+        }
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

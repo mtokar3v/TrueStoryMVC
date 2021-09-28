@@ -1,26 +1,28 @@
 ﻿@model TrueStoryMVC.Models.ViewModels.RegisterUserModel
 <div class="col-sm-9">
-<h2>Регистрация нового пользователя</h2>
-<form method="post" asp-controller="Account" asp-action="Register">
-    <div asp-validation-summary="ModelOnly"></div>
-    <div>
-        <label asp-for="Email"></label><br />
-        <input asp-for="Email" />
-    </div>
-    <div>
-        <label asp-for="Name"></label><br />
-        <input asp-for="Name" />
-    </div>
-    <div>
-        <label asp-for="Password"></label><br />
-        <input asp-for="Password" />
-    </div>
-    <div>
-        <label asp-for="PasswordConfirm"></label><br />
-        <input asp-for="PasswordConfirm" />
-    </div>
-    <div>
-        <input type="submit" value="Регистрация" />
-    </div>
-</form>
+    <h2>Регистрация нового пользователя</h2>
+    <form method="post" asp-controller="Account" asp-action="Register">
+        <div asp-validation-summary="ModelOnly"></div>
+        <div class="form-group">
+            <label asp-for="Email"></label><br />
+            <input asp-for="Email" class="form-control"/>
+        </div>
+        <div class="form-group">
+            <label asp-for="Name"></label><br />
+            <input asp-for="Name" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Password"></label><br />
+            <input asp-for="Password" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="PasswordConfirm"></label><br />
+            <input asp-for="PasswordConfirm" class="form-control" />
+        </div>
+        <div>
+            <input type="submit" class="btn btn-primary btn-block" value="Регистрация" />
+        </div>
+    </form>
+
+    <a asp-action="login" class="font-weight-normal mt-2">Войти в аккаунт</a>
 </div>
