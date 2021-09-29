@@ -27,7 +27,7 @@ namespace TrueStoryMVC.Services
         int N = 20;
         public IQueryable<Post> GetPosts(ApplicationContext db, PostBlockInfo postBlock)
         {
-            return db.Posts.Where(t => t.PostTime.Day + 1 > DateTime.UtcNow.Day && t.PostTime.Month == DateTime.UtcNow.Month && t.PostTime.Year == DateTime.UtcNow.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * N).Take(N);
+            return db.Posts.Where(t => t.PostTime.Day + 1 >= DateTime.UtcNow.Day && t.PostTime.Month == DateTime.UtcNow.Month && t.PostTime.Year == DateTime.UtcNow.Year).OrderByDescending(p => p.Rating).Skip(postBlock.Number * N).Take(N);
         }
     }
 
@@ -36,7 +36,7 @@ namespace TrueStoryMVC.Services
         int N = 20;
         public IQueryable<Post> GetPosts(ApplicationContext db, PostBlockInfo postBlock)
         {
-            return db.Posts.Where(t => t.PostTime.Day + 1 > DateTime.UtcNow.Day && t.PostTime.Month == DateTime.UtcNow.Month && t.PostTime.Year == DateTime.UtcNow.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * N).Take(N);
+            return db.Posts.Where(t => t.PostTime.Day + 1 >= DateTime.UtcNow.Day && t.PostTime.Month == DateTime.UtcNow.Month && t.PostTime.Year == DateTime.UtcNow.Year).OrderByDescending(p => p.PostTime).Skip(postBlock.Number * N).Take(N);
         }
     }
 

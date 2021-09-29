@@ -17,6 +17,7 @@ namespace TrueStoryMVC.Controllers
         public UsersController(UserManager<User> userManager, IMemoryCache cache)
         {
             _userManager = userManager;
+            _cache = cache;
         }
         public IActionResult Index() => View(_userManager.Users.ToList());
 
@@ -69,22 +70,25 @@ namespace TrueStoryMVC.Controllers
             //User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
             //byte[] data = new byte[user.Picture.Data.Length];
             //data = user.Picture.Data;
-
-            Img avatar = null;
-            if (!_cache.TryGetValue("Avatar", out avatar))
+            byte[] data = null;
+            if (User.Identity.IsAuthenticated)
             {
-                User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                avatar = user.Picture;
-
-                if (avatar != null)
+                
+                if (!_cache.TryGetValue("Avatar", out data))
                 {
-                    MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
-                    opt.Priority = CacheItemPriority.High;
-                    _cache.Set("avatar", avatar, opt);
+                    string name = HttpContext.User.Identity.Name;
+                    User user = await _userManager.FindByNameAsync(name);
+                    data = user.Picture.Data;
+
+                    if (data != null)
+                    {
+                        MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                        opt.Priority = CacheItemPriority.High;
+                        _cache.Set("avatar", data, opt);
+                    }
                 }
             }
-
-            return Json(new { data = avatar.Data });
+            return Json(new { data = data });
         }
     }
 }
