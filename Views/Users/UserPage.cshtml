@@ -44,48 +44,48 @@
 
 </style>
 
-<div class="col-9">
-    <div class="row flex-row-reverse">
-        <div class="infoBlock border col-10">
-            <div class="bg-secondary row profile-header align-content-center  justify-content-around" style="height: 50%">
+
+<div class="row flex-row-reverse">
+    <div class="infoBlock border col-10">
+        <div class="bg-secondary row profile-header align-content-center  justify-content-around" style="height: 50%">
                 
-                <div class="user-pic-wrapper">
-                    @if (Model.UserName == User.Identity.Name)
-                    {
-                        <input type="file" onchange="changePic(this)" class="input-pic" accept="image/*" />
-                    }
-                    @if (Model.Picture.Data == null)
-                    {
-                        <img class="rounded-circle border user-pic" src="~/user_pic.jpg">
-                    }
-                    else
-                    {
-                        <img class="rounded-circle border user-pic" src="data:image/jpeg ;base64,@(Convert.ToBase64String(Model.Picture.Data))" />
-                    }
+            <div class="user-pic-wrapper">
+                @if (Model.UserName == User.Identity.Name)
+                {
+                    <input type="file" onchange="changePic(this)" class="input-pic" accept="image/*" />
+                }
+                @if (Model.Picture.Data == null)
+                {
+                    <img class="rounded-circle border user-pic" src="~/user_pic.jpg">
+                }
+                else
+                {
+                    <img class="rounded-circle border user-pic" src="data:image/jpeg ;base64,@(Convert.ToBase64String(Model.Picture.Data))" />
+                }
 
-                </div>
             </div>
-            <h2 id="userName">@Model.UserName</h2>
-            <p>На True Story <how-long-sweet post-time="@Model.RegisterTime" /></p>
-            <p>Поставил(а) <span style="color: green"><b>@Model.LikeCount плюсов</b></span>  и <span style="color: red"><b>@Model.DisLikeCount минусов</b></span> </p>
-            <div class="row">
-                <div class="col-auto">
-                    <h4>@Model.Rating</h4>
-                    <p>рейтинг</p>
-                </div>
-                <div class="col-auto">
-                    <h4>@Model.CommentCount</h4>
-                    <p>комментариев</p>
-                </div>
-                <div class="col-auto">
-                    <h4>@Model.PostCount</h4>
-                    <p>постов</p>
-                </div>
-            </div>
-
         </div>
+        <h2 id="userName">@Model.UserName</h2>
+        <p>На True Story <how-long-sweet post-time="@Model.RegisterTime" /></p>
+        <p>Поставил(а) <span style="color: green"><b>@Model.LikeCount плюсов</b></span>  и <span style="color: red"><b>@Model.DisLikeCount минусов</b></span> </p>
+        <div class="row">
+            <div class="col-auto">
+                <h4>@Model.Rating</h4>
+                <p>рейтинг</p>
+            </div>
+            <div class="col-auto">
+                <h4>@Model.CommentCount</h4>
+                <p>комментариев</p>
+            </div>
+            <div class="col-auto">
+                <h4>@Model.PostCount</h4>
+                <p>постов</p>
+            </div>
+        </div>
+
     </div>
 </div>
+
 
 <script src="~/js/PostStaff.js"></script>
 <script>

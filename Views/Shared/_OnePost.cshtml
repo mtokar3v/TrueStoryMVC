@@ -48,7 +48,7 @@
     </div>
     <div class="col-10 border mt-1 p-1" style="background-color: white" post-id="@Model.Id">
         <a asp-action="userpage" asp-controller="users" asp-route-username="@Model.Author" style="padding-left: 5%;">@Model.Author</a>
-        @if (User.Identity.Name == Model.Author)
+        @if (User.Identity.Name == Model.Author || User.IsInRole("admin"))
         {
             <a asp-controller="Home" asp-action="Delete" asp-route-id="@Model.Id" style="float: right">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">

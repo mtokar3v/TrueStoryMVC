@@ -1,11 +1,9 @@
 ﻿@model string
 
-<div class="col-9 content">
-    <p>Посты по тегу "<span id="tagsLine">@Model</span>"</p>
-</div>
+<p>Посты по тегу "<span id="tagsLine">@Model</span>"</p>
 
 <script src="~/js/PostStaff.js"></script>
 <script>
-    window.onload = getPostBlock(3, document.getElementById('tagsLine').innerHTML);
-    window.addEventListener('scroll', () => getPostBlockAfterScroll(3, document.getElementById('tagsLine').innerHTML), false);
+window.onload = getPostBlock(3, document.getElementById('tagsLine').innerHTML);
+window.addEventListener('scroll', () => getPostBlockAfterScroll(3, document.getElementById('tagsLine').innerHTML), false);
 </script>

@@ -36,6 +36,7 @@ namespace TrueStoryMVC.Controllers
             return View();
         }
 
+        [Authorize]
         public async Task<IActionResult> CreatePost([FromBody] PostModel postModel)
         {
             if (postModel.Validate().IsValid && User.Identity.IsAuthenticated)
@@ -91,6 +92,7 @@ namespace TrueStoryMVC.Controllers
             return BadRequest();
         }
 
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id != null)
