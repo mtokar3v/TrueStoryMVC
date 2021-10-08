@@ -4,7 +4,7 @@ using TrueStoryMVC.Data;
 
 namespace TrueStoryMVC.Models
 {
-    public class Post
+    public class Post : IPost
     {
         public int Id { get; set; }
         public string Header { get; set; }

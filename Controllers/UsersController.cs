@@ -7,6 +7,7 @@ using TrueStoryMVC.Models.ViewModels;
 using TrueStoryMVC.Builders;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace TrueStoryMVC.Controllers
 {
@@ -14,10 +15,12 @@ namespace TrueStoryMVC.Controllers
     {
         UserManager<User> _userManager;
         private IMemoryCache _cache;
-        public UsersController(UserManager<User> userManager, IMemoryCache cache)
+        private readonly ILogger<UsersController> _logger;
+        public UsersController(UserManager<User> userManager, IMemoryCache cache, ILogger<UsersController> logger)
         {
             _userManager = userManager;
             _cache = cache;
+            _logger = logger;
         }
         public IActionResult Index() => View(_userManager.Users.ToList());
 
@@ -53,23 +56,24 @@ namespace TrueStoryMVC.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                User user = await _userManager.FindByNameAsync(User.Identity.Name);
-                ImageBuilder builder = new SquareImageBuilder();
-                //ImageConstructor constructor = new ImageConstructor(builder);
-                //constructor.ConstructImage(image.Data.ToArray());
-                builder.SetData(image.Data.ToArray());
-                user.Picture = builder.GetResult();
-                await _userManager.UpdateAsync(user);
+                try
+                {
+                    User user = await _userManager.FindByNameAsync(User.Identity.Name);
+                    ImageBuilder builder = new SquareImageBuilder();
+                    builder.SetData(image.Data.ToArray());
+                    user.Picture = builder.GetResult();
+                    await _userManager.UpdateAsync(user);
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
+                }
             }
         }
 
         [HttpPost]
         public async Task<JsonResult> GetAvatar()
         {
-
-            //User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-            //byte[] data = new byte[user.Picture.Data.Length];
-            //data = user.Picture.Data;
             byte[] data = null;
             if (User.Identity.IsAuthenticated)
             {
@@ -78,7 +82,7 @@ namespace TrueStoryMVC.Controllers
                 {
                     string name = HttpContext.User.Identity.Name;
                     User user = await _userManager.FindByNameAsync(name);
-                    data = user.Picture.Data;
+                    data = user.Picture?.Data;
 
                     if (data != null)
                     {

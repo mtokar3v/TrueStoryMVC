@@ -44,3 +44,71 @@ pre {
     display: flex;
     width: 100%;
 }
+
+.bi-arrow-up-square:hover {
+    fill: green;
+}
+
+.bi-arrow-down-square:hover {
+    fill: red;
+}
+
+.post-content {
+    margin-top: 5%;
+}
+
+.tags-wrapper {
+    display: flex;
+    justify-content: space-between;
+    padding: 0% 10% 2% 10%;
+}
+
+.tags-wrapper a {
+    color: #757575;
+}
+
+.tags-wrapper a:hover {
+    color: #252525;
+}
+
+.infoBlock {
+    background-color: white;
+    height: 500px;
+}
+
+.profile-header {
+    background: linear-gradient(#007bff, pink);
+}
+
+.input-pic {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 200;
+    opacity: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.user-pic-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-pic-wrapper {
+    height: 200px;
+    position: relative;
+}
+
+.user-pic-wrapper:hover {
+    opacity: 0.5;
+}
+
+.user-pic {
+    width: 100%;
+    height: 100%;
+}

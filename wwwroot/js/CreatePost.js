@@ -27,7 +27,7 @@ let images = [];
 let addImg = addBinArray(images);
 let delImg = delBinArray(images);
 
-async function sendData() {
+async function sendData(uri) {
     if (validation()) {
         let text = [];
         let TextArea = document.getElementsByTagName('textarea');
@@ -51,14 +51,16 @@ async function sendData() {
         let header = document.getElementById('header-input').value;
         let tagsline = document.getElementById('tags-input').value;
 
-        await fetch('/home/CreatePost', {
+        let url = uri + '/home/CreatePost';
+
+        await fetch(url, {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ Header: header, Texts: text, Images: images, TagsLine: tagsline, Scheme: scheme })
         });
-        window.location.href = '/Home/Hot';
+        window.location.href = uri+'/Home/Hot';
     }
 }
 
@@ -73,7 +75,6 @@ function ReadURL(input, i) {
     reader.onloadend = function () {
         img.src = reader.result;
     }
-
 
     div.className = "someImage row";
     div.setAttribute("field-type", "image");

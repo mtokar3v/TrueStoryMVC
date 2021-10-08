@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using TrueStoryMVC.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace TrueStoryMVC
 {
@@ -21,7 +22,7 @@ namespace TrueStoryMVC
         public void ConfigureServices(IServiceCollection services)
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
+            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(connection));
             services.AddIdentity<User, IdentityRole>(opts => {
                 opts.User.RequireUniqueEmail = true;
                 opts.User.AllowedUserNameCharacters =
@@ -42,6 +43,11 @@ namespace TrueStoryMVC
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -54,6 +60,7 @@ namespace TrueStoryMVC
 
             app.UseHttpsRedirection();
             //app.UseSession();
+
             app.UseStaticFiles(new StaticFileOptions()
             {
                 OnPrepareResponse = ctx =>

@@ -17,6 +17,8 @@ namespace TrueStoryMVC.Builders
         private Img img = new Img();
         public override void SetData(byte[] value)
         {
+            if (value == null)
+                throw new Exception("Изобраение не передано");
             using (var reader = new MemoryStream(value))
             {
                 using (Image image = Image.FromStream(reader))
@@ -54,6 +56,9 @@ namespace TrueStoryMVC.Builders
         private Img img = new Img();
         public override void SetData(byte[] value)
         {
+            if (value == null)
+                throw new Exception("Изобраение не передано");
+
             using (var reader = new MemoryStream(value))
             {
                 using (Image image = Image.FromStream(reader))

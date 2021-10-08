@@ -1,8 +1,8 @@
-﻿using TrueStoryMVC.Data;
+﻿using TrueStoryMVC.Models;
 
-namespace TrueStoryMVC.Models
+namespace TrueStoryMVC.Data
 {
-    public class PostPicture : IPostPicture
+    interface IPostPicture
     {
         public int Id { get; set; }
         public Img Picture { get; set; }

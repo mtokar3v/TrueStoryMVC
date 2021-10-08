@@ -2,12 +2,11 @@
 
 <div class="row">
     @{await Html.RenderPartialAsync("_OnePost", Model);}
-
-
 </div>
 <div class="row flex-row-reverse">
     <div class="col-10 mt-3">
-        <form id="formElem-@Model.Id" onsubmit="postArticle()">
+        <environment names="Development">
+            <form id="formElem-@Model.Id" onsubmit="postArticle('http://localhost:5200')">
                 <div class="form-group">
                     <input type="hidden" name="PostId" value="@Model.Id" class="form-control" />
                 </div>
@@ -17,12 +16,27 @@
                 <div class="form-group w-25">
                     <input type="submit" value="Отправить" class="form-control btn btn-primary">
                 </div>
-        </form>
+            </form>
+        </environment>
+
+        <environment names="Production">
+            <form id="formElem-@Model.Id" onsubmit="postArticle('http://40.69.39.248')">
+                <div class="form-group">
+                    <input type="hidden" name="PostId" value="@Model.Id" class="form-control" />
+                </div>
+                <div class="form-group w-100">
+                    <textarea name="Text" class="form-control autotextarea" id="text-input" placeholder="Введите комментарий"></textarea>
+                </div>
+                <div class="form-group w-25">
+                    <input type="submit" value="Отправить" class="form-control btn btn-primary">
+                </div>
+            </form>
+        </environment>
     </div>
 </div>
 
 <div class="row flex-row-reverse">
-    <div class="col-10" id="post-comment-block" >
+    <div class="col-10" id="post-comment-block">
         @if (Model.comments.Count != 0)
         {
             foreach (var com in Model.comments)
@@ -31,18 +45,36 @@
                     <span id="comment-rating-@com.Id" class="rating">@com.Rating</span>
 
                     <span class="like-button" title="Мне нравится">
-                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-up-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg" onclick="like(this, 1, @com.Id, 1)">
-                            <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
-                            <path fill-rule="evenodd" d="M4.646 8.354a.5.5 0 0 0 .708 0L8 5.707l2.646 2.647a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 0 0 0 .708z" />
-                            <path fill-rule="evenodd" d="M8 11.5a.5.5 0 0 0 .5-.5V6a.5.5 0 0 0-1 0v5a.5.5 0 0 0 .5.5z" />
-                        </svg>
+                        <environment names="Development">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-up-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg" onclick="like(this, 1, @com.Id, 1,'http://localhost:5200')">
+                                <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                                <path fill-rule="evenodd" d="M4.646 8.354a.5.5 0 0 0 .708 0L8 5.707l2.646 2.647a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 0 0 0 .708z" />
+                                <path fill-rule="evenodd" d="M8 11.5a.5.5 0 0 0 .5-.5V6a.5.5 0 0 0-1 0v5a.5.5 0 0 0 .5.5z" />
+                            </svg>
+                        </environment>
+                        <environment names="Production">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-up-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg" onclick="like(this, 1, @com.Id, 1, 'http://40.69.39.248')">
+                                <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                                <path fill-rule="evenodd" d="M4.646 8.354a.5.5 0 0 0 .708 0L8 5.707l2.646 2.647a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 0 0 0 .708z" />
+                                <path fill-rule="evenodd" d="M8 11.5a.5.5 0 0 0 .5-.5V6a.5.5 0 0 0-1 0v5a.5.5 0 0 0 .5.5z" />
+                            </svg>
+                        </environment>
                     </span>
                     <span class="like-button" title="Мне не нравится">
-                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg" onclick="like(this, 2, @com.Id, 1)">
-                            <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
-                            <path fill-rule="evenodd" d="M4.646 7.646a.5.5 0 0 1 .708 0L8 10.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z" />
-                            <path fill-rule="evenodd" d="M8 4.5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5z" />
-                        </svg>
+                        <environment names="Development">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg" onclick="like(this, 2, @com.Id, 1, 'http://localhost:5200')">
+                                <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                                <path fill-rule="evenodd" d="M4.646 7.646a.5.5 0 0 1 .708 0L8 10.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z" />
+                                <path fill-rule="evenodd" d="M8 4.5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5z" />
+                            </svg>
+                        </environment>
+                        <environment names="Production">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg" onclick="like(this, 2, @com.Id, 1, 'http://40.69.39.248')">
+                                <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                                <path fill-rule="evenodd" d="M4.646 7.646a.5.5 0 0 1 .708 0L8 10.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z" />
+                                <path fill-rule="evenodd" d="M8 4.5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5z" />
+                            </svg>
+                        </environment>   
                     </span>
                     <span class="text-secondary"><a asp-action="userpage" asp-controller="users" asp-route-username="@com.Author">@com.Author</a></span>
                     <p-time post-time=@com.PostTime class="text-secondary ml-1" />
@@ -53,27 +85,16 @@
     </div>
 </div>
 
-
 <script src="~/js/PostStaff.js"></script>
 <script>
-    window.onload = () => { ColorPostLike(document); ColorCommentLike(); }
-
-    var textarea = document.querySelector('textarea');
-
-    textarea.addEventListener('keyup', function () {
-        if (this.scrollTop > 0) {
-            this.style.height = this.scrollHeight + "px";
-        }
-    });
-
-    async function postArticle() {
+    async function postArticle(uri) {
 
     event.preventDefault();
     var Article = new FormData(this.event.target);
 
     if (!isBlank(Article.get('Text'))) {
-
-        let responce = await fetch('/home/comment', {
+        let url = uri + '/home/comment';
+        let responce = await fetch( url, {
             method: "POST",
             body: Article
         })
@@ -100,9 +121,29 @@
             document.getElementById('post-comment-block').append(div);
         }
         else
-            window.location.href = 'account/login';
+            window.location.href = uri + 'account/login';
     }
-
     document.getElementsByTagName('textarea')[0].style.height = '100%';
-}
+    }
+</script>
+
+<environment names="Development">
+    <script>
+        window.addEventListener('load', ColorPostLike(document, 'http://localhost:5200'), ColorCommentLike('http://localhost:5200'));
+    </script>
+</environment>
+<environment names="Production">
+    <script>
+        window.addEventListener('load', ColorPostLike(document, 'http://40.69.39.248'), ColorCommentLike('http://40.69.39.248'));
+    </script>
+</environment>
+
+<script>
+    var textarea = document.querySelector('textarea');
+
+    textarea.addEventListener('keyup', function () {
+        if (this.scrollTop > 0) {
+            this.style.height = this.scrollHeight + "px";
+        }
+    });
 </script>

@@ -102,4 +102,28 @@ namespace TrueStoryMVC.Services
             return result;
         }
     }
+
+    public class SchemeValidate : IValidate
+    {
+        private string _scheme;
+        private int _contentCount;
+        public SchemeValidate(int contentCount, string scheme)
+        {
+            _scheme = scheme;
+            _contentCount = contentCount;
+        }
+
+        public string ErrorMessage { get; private set; }
+
+        public bool isValid()
+        {
+            //-1 т.к схема всегда заканчивается пробелом, от чего в массив попадает "" => length = contentCount+!1
+            bool result = _scheme.Split(' ').Length - 1 == _contentCount;
+
+            if (result == false)
+                ErrorMessage = "Схема не соответствует контенту";
+
+            return result;
+        }
+    }
 }

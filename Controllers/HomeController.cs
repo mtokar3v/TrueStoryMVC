@@ -39,56 +39,58 @@ namespace TrueStoryMVC.Controllers
         [Authorize]
         public async Task<IActionResult> CreatePost([FromBody] PostModel postModel)
         {
-            if (postModel.Validate().IsValid && User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated)
             {
-                try
+                if (postModel.Validate().IsValid)
                 {
-                    Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name, Tags = postModel.TagsLine, Scheme = postModel.Scheme };
-                    db.Posts.Add(post);
-                    await db.SaveChangesAsync();
+                    try
+                    {
+                        Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name, Tags = postModel.TagsLine, Scheme = postModel.Scheme };
+                        db.Posts.Add(post);
+                        await db.SaveChangesAsync();
 
-                    foreach (var t in postModel.Texts)
-                    {
-                        Text text = new Text { PostId = post.Id, TextData = t };
-                        db.Texts.Add(text);
-                    }
-                        
-                    foreach (var i in postModel.Images)
-                    {
-                        PostPicture pic = new PostPicture();
-                        ImageBuilder builder = new RectImageBuilder();
-                        //ImageConstructor imgC = new ImageConstructor(builder);
-                        //imgC.ConstructImage(i.ToArray());
-                        builder.SetData(i.ToArray());
-                        pic.Picture = builder.GetResult();
-                        pic.PostId = post.Id;
-                        db.Pictures.Add(pic);
-                    }
-
-                    User user = null;
-                    if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
-                    {
-                        user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                        if (user != null)
+                        foreach (var t in postModel.Texts)
                         {
-                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
-                            opt.Priority = CacheItemPriority.High;
-                            _cache.Set(user.UserName, user, opt);
+                            Text text = new Text { PostId = post.Id, TextData = t };
+                            db.Texts.Add(text);
                         }
+
+                        foreach (var i in postModel.Images)
+                        {
+                            PostPicture pic = new PostPicture();
+                            ImageBuilder builder = new RectImageBuilder();
+                            builder.SetData(i.ToArray());
+                            pic.Picture = builder.GetResult();
+                            pic.PostId = post.Id;
+                            db.Pictures.Add(pic);
+                        }
+
+                        User user = null;
+                        if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
+                        {
+                            user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                            if (user != null)
+                            {
+                                MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                                opt.Priority = CacheItemPriority.High;
+                                _cache.Set(user.UserName, user, opt);
+                            }
+                        }
+
+                        user.PostCount++;
+                        db.Users.Update(user);
+
+                        await db.SaveChangesAsync();
+                        return Ok();
                     }
-
-                    user.PostCount++;
-                    db.Users.Update(user);
-
-                    await db.SaveChangesAsync();
-                    return Ok();
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-                }
+                else
+                    _logger.LogInformation("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, postModel.Validate().ErrorList);
             }
-
             return BadRequest();
         }
 
@@ -135,6 +137,7 @@ namespace TrueStoryMVC.Controllers
             return View("Tag",SomeTags);
         }
 
+        [HttpPost]
         public async Task<IActionResult> GetPostBlock([FromBody] PostBlockInfo postBlock)
         {
             const byte HOT = 0;

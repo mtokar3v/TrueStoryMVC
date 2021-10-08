@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TrueStoryMVC.Services;
 
 namespace TrueStoryMVC.Models.ViewModels
@@ -10,7 +11,6 @@ namespace TrueStoryMVC.Models.ViewModels
         public List<IEnumerable<byte>> Images { get; set; }
         public string TagsLine { get; set; }
         public string Scheme { get; set; }
-        
         public ValidateResult Validate()
         {
             ValidateResult result = new ValidateResult();
@@ -18,6 +18,7 @@ namespace TrueStoryMVC.Models.ViewModels
             List<IValidate> mandatoryValidates = new List<IValidate>();
             mandatoryValidates.Add(new BlankHeaderValidate(Header));
             mandatoryValidates.Add(new BlankTagValidate(TagsLine));
+            mandatoryValidates.Add(new SchemeValidate(Images.Count() + Texts.Count(), Scheme));
 
             List<IValidate> optionalValidates = new List<IValidate>();
             optionalValidates.Add(new ImageValidate(Images));

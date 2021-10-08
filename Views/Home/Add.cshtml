@@ -20,7 +20,12 @@
 
                 <div class="row justify-content-end">
                     <div class="form-group  col-10">
-                        <input type="button" value="Отправить" class="btn btn-primary" onclick="sendData()"/>
+                        <environment names="Development">
+                            <input type="button" value="Отправить" class="btn btn-primary" onclick="sendData('http://localhost:5200')" />
+                        </environment>
+                        <environment names="Production">
+                            <input type="button" value="Отправить" class="btn btn-primary" onclick="sendData('http://40.69.39.248')" />
+                        </environment>
                     </div>
                 </div>
             </form>

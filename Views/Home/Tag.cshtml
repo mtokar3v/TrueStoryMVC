@@ -3,7 +3,15 @@
 <p>Посты по тегу "<span id="tagsLine">@Model</span>"</p>
 
 <script src="~/js/PostStaff.js"></script>
-<script>
-window.onload = getPostBlock(3, document.getElementById('tagsLine').innerHTML);
-window.addEventListener('scroll', () => getPostBlockAfterScroll(3, document.getElementById('tagsLine').innerHTML), false);
-</script>
+<environment names="Development">
+    <script>
+        window.onload = getPostBlock(3, document.getElementById('tagsLine').innerHTML,'http://localhost:5200');
+        window.addEventListener('scroll', () => getPostBlockAfterScroll(3, document.getElementById('tagsLine').innerHTML, 'http://localhost:5200'), false);
+    </script>
+</environment>
+<environment names="Production">
+    <script>
+        window.onload = getPostBlock(3, document.getElementById('tagsLine').innerHTML, 'http://40.69.39.248');
+        window.addEventListener('scroll', () => getPostBlockAfterScroll(3, document.getElementById('tagsLine').innerHTML, 'http://40.69.39.248'), false);
+    </script>
+</environment>

@@ -1,5 +1,13 @@
 ﻿<script src="~/js/PostStaff.js"></script>
-<script>
-    window.onload = getPostBlock(0);
-    window.addEventListener('scroll', () => getPostBlockAfterScroll(0), false);
-</script>
+<environment names="Development">
+    <script>
+        window.onload = getPostBlock(0, null, 'http://localhost:5200');
+        window.addEventListener('scroll', () => getPostBlockAfterScroll(0, null, 'http://localhost:5200'), false);
+    </script>
+</environment>
+<environment names="Production">
+    <script>
+        window.onload = getPostBlock(0, null, 'http://40.69.39.248');
+        window.addEventListener('scroll', () => getPostBlockAfterScroll(0, null, 'http://40.69.39.248'), false);
+    </script>
+</environment>

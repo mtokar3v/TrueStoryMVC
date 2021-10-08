@@ -1,12 +1,12 @@
-﻿async function getPostBlockAfterScroll(type, arg) {
-    let window_bottom = document.documentElement.getBoundingClientRect().bottom;
-    if (Math.round(window_bottom) <= document.documentElement.clientHeight) {
-        await getPostBlock(type, arg);
-    }
-}
-
-async function like(button, type, postId, fromType) {
-    let url = '/home/like';
+﻿async function like(button, type, postId, fromType, uri) {
+    //types:
+    //FROM_POST = 0;
+    //FROM_COMMENT = 1;
+    let url = uri + '/home/like';
+    console.log(url);
+    console.log(type);
+    console.log(postId);
+    console.log(fromType);
     let responce = await fetch(url, {
         method: 'post',
         headers: {
@@ -32,7 +32,6 @@ async function like(button, type, postId, fromType) {
                 button.parentNode.previousElementSibling.previousElementSibling.firstElementChild.setAttribute('fill', 'currentColor');
             }
 
-
             html = document.getElementById("post-rating-" + postId);
         }
         else if (fromType == 1) {
@@ -57,11 +56,12 @@ async function like(button, type, postId, fromType) {
         html.innerHTML = count;
     }
     else
-        window.location.href = 'account/login';
+        window.location.href = uri + 'account/login';
 }
 
-async function checkLike(id, fromType) {
-    let responce = await fetch('/home/checkLike', {
+async function checkLike(id, fromType, uri) {
+    let url = uri + '/home/checkLike';;
+    let responce = await fetch(url, {
         method: 'post',
         headers: {
             'Accept': 'application/json',
@@ -73,13 +73,13 @@ async function checkLike(id, fromType) {
     return json == null ? null : json.result;
 }
 
-async function ColorPostLike(serchElem) {
+async function ColorPostLike(serchElem, uri) {
 
     let r = serchElem.getElementsByClassName('col-2');
 
     for (let i = 0; i < r.length; i++) {
         let id = (Number)(r[i].getAttribute('post-id'));
-        let type = await checkLike(id, 0);
+        let type = await checkLike(id, 0, uri);
 
         if (type != null) {
             let rating = document.getElementById('post-rating-' + id);
@@ -94,14 +94,15 @@ async function ColorPostLike(serchElem) {
 }
 
 //нужно будет добавить совместимость с ветками комментариев
-async function ColorCommentLike() {
+async function ColorCommentLike(uri) {
     const LIKE = 1;
     const DISLIKE = 2;
     let div = document.getElementsByClassName('someComment');
-    console.log(div);
     for (let i = 0; i < div.length; i++) {
         let commentId = (Number)(div[i].getAttribute('comment-id'));
-        let type = await checkLike(commentId, 1);
+        console.log(commentId);
+        let type = await checkLike(commentId, 1, uri);
+        console.log(type);
         if (type != null) {
             let rating = document.getElementById('comment-rating-' + commentId);
             if (type != 0) {
@@ -114,19 +115,19 @@ async function ColorCommentLike() {
     }
 }
 
-async function CreateBlock(num, html) {
+async function CreateBlock(num, html, uri) {
     let div = this.document.createElement('div');
     div.id = 'post-block-' + num;
     div.className = 'postBlock';
     div.innerHTML = html;
     document.getElementsByClassName('col-9')[0].append(div);
-    await ColorPostLike(div);
+    await ColorPostLike(div, uri);
 }
 
-async function getPostBlock(type, arg) {
+async function getPostBlock(type, arg, uri) {
     let num = document.getElementsByClassName('postBlock').length;
-
-    let responce = await fetch('/home/GetPostBlock', {
+    let url = uri + '/home/GetPostBlock';
+    let responce = await fetch(url, {
         method: 'post',
         headers: {
             'Content-Type': 'application/json',
@@ -135,7 +136,14 @@ async function getPostBlock(type, arg) {
     });
 
     if (responce.json != null)
-        await CreateBlock(num, await responce.text());
+        await CreateBlock(num, await responce.text(), uri);
+}
+
+async function getPostBlockAfterScroll(type, arg, uri) {
+    let window_bottom = document.documentElement.getBoundingClientRect().bottom;
+    if (Math.round(window_bottom) <= document.documentElement.clientHeight) {
+        await getPostBlock(type, arg, uri);
+    }
 }
 
 function isBlank(str) {
