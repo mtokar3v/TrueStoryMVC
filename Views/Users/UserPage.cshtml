@@ -9,7 +9,7 @@
                     <input type="file" onchange="changePic(this, 'http://localhost:5200')" class="input-pic" accept="image/*" />
                 </environment>
                 <environment names="Production">
-                    <input type="file" onchange="changePic(this, 'http://40.69.39.248')" class="input-pic" accept="image/*" />
+                    <input type="file" onchange="changePic(this, 'http://truestory.northeurope.cloudapp.azure.com')" class="input-pic" accept="image/*" />
                 </environment>
                 }
                 @if (Model.Picture?.Data == null)
@@ -54,7 +54,7 @@
 </environment>
 <environment names="Production">
     <script>
-        window.onload = getPostBlock(4, document.getElementById('userName').innerHTML, 'http://40.69.39.248');
-        window.addEventListener('scroll', () => getPostBlockAfterScroll(4, document.getElementById('userName').innerHTML, 'http://40.69.39.248'), false);
+        window.onload = getPostBlock(4, document.getElementById('userName').innerHTML, 'http://truestory.northeurope.cloudapp.azure.com');
+        window.addEventListener('scroll', () => getPostBlockAfterScroll(4, document.getElementById('userName').innerHTML, 'http://truestory.northeurope.cloudapp.azure.com'), false);
     </script>
 </environment>

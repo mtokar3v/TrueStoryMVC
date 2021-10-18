@@ -103,7 +103,7 @@ namespace TrueStoryMVC.Controllers
         [HttpGet]
         public IActionResult UserList()
         {
-            return View(_userManager.Users.ToList());
+            return  View(_userManager.Users.ToList());
         }
     }
 }

@@ -1,8 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using TrueStoryMVC.Models;
 using TrueStoryMVC.Models.ViewModels;
 using TrueStoryMVC.Services;
@@ -13,13 +15,15 @@ namespace TrueStoryMVC.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private IMemoryCache _cache;
+        private readonly IMemoryCache _cache;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IMemoryCache cache)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IMemoryCache cache, ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _cache = cache;
+            _logger = logger;
         }
         [HttpGet]
         public IActionResult Register()
@@ -30,7 +34,7 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterUserModel model)
         {
-            if(ModelState.IsValid)
+            if(ModelState.IsValid && model!=null)
             {
                 User user = new User { UserName = model.Name, Email = model.Email };
                 IdentityResult result = await _userManager.CreateAsync(user, model.Password);
@@ -93,7 +97,7 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginUserModel model)
         {
-            if(ModelState.IsValid)
+            if(ModelState.IsValid && model != null)
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Login, model.Password, model.RememberMe, true);
                 if (result.Succeeded)
@@ -108,8 +112,16 @@ namespace TrueStoryMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            _cache.Dispose();
-            await _signInManager.SignOutAsync();
+            try
+            {
+                if (_cache.Get("Avatar_" + User.Identity.Name) != null)
+                    _cache.Remove("Avatar_" + User.Identity.Name);
+                await _signInManager.SignOutAsync();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
+            }
             return RedirectToAction("Hot", "Home");
         }
     }

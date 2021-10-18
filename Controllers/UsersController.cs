@@ -24,17 +24,6 @@ namespace TrueStoryMVC.Controllers
         }
         public IActionResult Index() => View(_userManager.Users.ToList());
 
-        [HttpPost]
-        public async Task<ActionResult> Delete(string id)
-        {
-            User user = await _userManager.FindByIdAsync(id);
-            if (user != null)
-            {
-                IdentityResult result = await _userManager.DeleteAsync(user);
-            }
-            return RedirectToAction("Index");
-        }
-
         [HttpGet]
         public async Task<IActionResult> UserPage(string userName)
         {
@@ -54,7 +43,7 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task UpdateAvatar([FromBody] OneImage image)
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated && image.Data != null)
             {
                 try
                 {
@@ -62,6 +51,11 @@ namespace TrueStoryMVC.Controllers
                     ImageBuilder builder = new SquareImageBuilder();
                     builder.SetData(image.Data.ToArray());
                     user.Picture = builder.GetResult();
+
+                    MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
+                    opt.Priority = CacheItemPriority.High;
+                    _cache.Set("Avatar_" + User.Identity.Name, image.Data, opt);
+
                     await _userManager.UpdateAsync(user);
                 }
                 catch(Exception ex)
@@ -77,19 +71,28 @@ namespace TrueStoryMVC.Controllers
             byte[] data = null;
             if (User.Identity.IsAuthenticated)
             {
-                
-                if (!_cache.TryGetValue("Avatar", out data))
+                try
                 {
-                    string name = HttpContext.User.Identity.Name;
-                    User user = await _userManager.FindByNameAsync(name);
-                    data = user.Picture?.Data;
-
-                    if (data != null)
+                    if (!_cache.TryGetValue("Avatar_" + User.Identity.Name, out data))
                     {
-                        MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
-                        opt.Priority = CacheItemPriority.High;
-                        _cache.Set("avatar", data, opt);
+                        string name = HttpContext.User.Identity.Name;
+                        User user = await _userManager.FindByNameAsync(name);
+                        data = user?.Picture?.Data;
+
+                        if (data != null)
+                        {
+                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                            opt.Priority = CacheItemPriority.High;
+                            _cache.Set("Avatar_" + User.Identity.Name, data, opt);
+                        }
                     }
+                }
+                catch(Exception ex)
+                {
+                    if (_cache.Get("Avatar_" + User.Identity.Name) != null)
+                        _cache.Remove("Avatar_" + User.Identity.Name);
+                    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
+                    return Json(null);
                 }
             }
             return Json(new { data = data });

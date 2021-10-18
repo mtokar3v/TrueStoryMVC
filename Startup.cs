@@ -22,7 +22,7 @@ namespace TrueStoryMVC
         public void ConfigureServices(IServiceCollection services)
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(connection));
+            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(connection)) ;
             services.AddIdentity<User, IdentityRole>(opts => {
                 opts.User.RequireUniqueEmail = true;
                 opts.User.AllowedUserNameCharacters =
@@ -36,6 +36,8 @@ namespace TrueStoryMVC
             {
                 options.SignIn.RequireConfirmedEmail = true;
             });
+
+
             //services.AddDistributedMemoryCache();
             //services.AddSession();
             services.AddControllersWithViews();
@@ -70,7 +72,6 @@ namespace TrueStoryMVC
             });
 
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
 

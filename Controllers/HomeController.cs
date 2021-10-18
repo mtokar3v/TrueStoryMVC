@@ -39,7 +39,7 @@ namespace TrueStoryMVC.Controllers
         [Authorize]
         public async Task<IActionResult> CreatePost([FromBody] PostModel postModel)
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated && postModel != null)
             {
                 if (postModel.Validate().IsValid)
                 {
@@ -97,7 +97,7 @@ namespace TrueStoryMVC.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id != null)
+            if (id.HasValue)
             {
                 try
                 {
@@ -187,27 +187,19 @@ namespace TrueStoryMVC.Controllers
                 try
                 {
                     User user = null;
-
                     if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
-                    {
                         user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                        if (user != null)
-                        {
-                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
-                            opt.Priority = CacheItemPriority.High;
-                            _cache.Set(user.UserName, user, opt);
-                        }
-                    }
-
-                    if (user != null)
-                        user.CommentCount++;
-                    else
-                        throw new Exception("unauthoruzed");
+                    if (user != null) user.CommentCount++; else return Unauthorized();
 
                     Comment newComment = new Comment { Text = comment.Text, Author = HttpContext.User.Identity.Name, PostTime = DateTime.Now.ToUniversalTime(), PostId = comment.PostId };
+                    
+                    MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
+                    opt.Priority = CacheItemPriority.High;
+                    _cache.Set(user.UserName, user, opt);
                     db.Users.Update(user);
                     db.Comments.Add(newComment);
                     await db.SaveChangesAsync();
+
                     return Ok();
                 }
                 catch (Exception ex)
@@ -325,29 +317,17 @@ namespace TrueStoryMVC.Controllers
 
             return Json(null);
         }
-
+        [HttpPost]
         public async Task<JsonResult> CheckLike([FromBody] LikeModel _like)
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated && _like != null)
             {
                 const byte FROM_POST = 0;
                 const byte FROM_COMMENT = 1;
 
                 try
                 {
-                    User user = null;
-                    //поиск в кэше по имени
-                    if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
-                    {
-                        user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                        if (user != null)
-                        {
-                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
-                            opt.Priority = CacheItemPriority.High;
-                            _cache.Set(user.UserName, user, opt);
-                        }
-                    }
-
+                    User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
                     Like like = _like.FromType switch
                     {
                         FROM_POST => db.Likes.FirstOrDefault(l => l.PostId == _like.PostId && l.UserId == user.Id),
@@ -365,10 +345,10 @@ namespace TrueStoryMVC.Controllers
             }
             return Json(null);
         }
-
+        [HttpGet]
         public async Task<IActionResult> Post(int? id)
         {
-            if (id != null)
+            if (id.HasValue)
             {
                 try
                 {

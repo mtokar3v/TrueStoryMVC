@@ -3,10 +3,6 @@
     //FROM_POST = 0;
     //FROM_COMMENT = 1;
     let url = uri + '/home/like';
-    console.log(url);
-    console.log(type);
-    console.log(postId);
-    console.log(fromType);
     let responce = await fetch(url, {
         method: 'post',
         headers: {
@@ -56,7 +52,7 @@
         html.innerHTML = count;
     }
     else
-        window.location.href = uri + 'account/login';
+        window.location.href = uri + '/account/login';
 }
 
 async function checkLike(id, fromType, uri) {
@@ -130,7 +126,8 @@ async function getPostBlock(type, arg, uri) {
     let responce = await fetch(url, {
         method: 'post',
         headers: {
-            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ PostBlockType: type, Number: num, Argument: arg })
     });
