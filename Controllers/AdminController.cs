@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TrueStoryMVC.Models;
@@ -100,10 +101,37 @@ namespace TrueStoryMVC.Controllers
             return NotFound();
         }
 
+        [Authorize (Roles = "admin")]
         [HttpGet]
         public IActionResult UserList()
         {
             return  View(_userManager.Users.ToList());
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Login(LoginUserModel model)
+        {
+            if (ModelState.IsValid && model != null)
+            {
+                if (model.Password == "admin")
+                {
+                    User user = await _userManager.FindByNameAsync(model.Login);
+                    if (!await _roleManager.RoleExistsAsync("admin"))
+                        await _roleManager.CreateAsync(new IdentityRole("admin"));
+                    await _userManager.AddToRoleAsync(user, "admin");
+                    return RedirectToAction("userlist", "admin");
+                }
+                ModelState.AddModelError("", "Неверный пароль");
+            }
+            return View(model);
         }
     }
 }
