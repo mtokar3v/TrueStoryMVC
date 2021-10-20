@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TrueStoryMVC.Models;
 using TrueStoryMVC.Models.ViewModels;
 
@@ -12,12 +14,18 @@ namespace TrueStoryMVC.Controllers
 {
     public class AdminController : Controller
     {
-        private RoleManager<IdentityRole> _roleManager;
-        private UserManager<User> _userManager;
-        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager)
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<User> _userManager;
+        private readonly ApplicationContext _db;
+        private readonly ILogger<HomeController> _logger;
+        private readonly SignInManager<User> _signInManager;
+        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, ApplicationContext dbContext, ILogger<HomeController> logger, SignInManager<User> signInManager)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _db = dbContext;
+            _logger = logger;
+            _signInManager = signInManager;
         }
 
         public IActionResult Index() => View(_roleManager.Roles.ToList());
@@ -103,9 +111,46 @@ namespace TrueStoryMVC.Controllers
 
         [Authorize (Roles = "admin")]
         [HttpGet]
-        public IActionResult UserList()
+        public async Task<IActionResult> UserList(string key, int page = 1)
         {
-            return  View(_userManager.Users.ToList());
+            int maxUsersOnPage = 2;
+
+            IQueryable<ShortUserInfoModel> source;
+
+            if (string.IsNullOrEmpty(key))
+            {
+                source = _db.Users.Select(u => new ShortUserInfoModel
+                {
+                    UserName = u.UserName,
+                    Id = u.Id,
+                    Avatar = u.Picture.Data
+                });
+            }
+            else
+            {
+                source = _db.Users.Where(u=>u.UserName.Contains(key)).Select(u => new ShortUserInfoModel
+                {
+                    UserName = u.UserName,
+                    Id = u.Id,
+                    Avatar = u.Picture.Data
+                });
+            }
+
+            int totalUser = await source.CountAsync();
+
+            List<ShortUserInfoModel> users = await source.Skip((page - 1) * maxUsersOnPage).Take(maxUsersOnPage).ToListAsync();
+
+            PageListScrollingModel pageListScrolling = new PageListScrollingModel(page, totalUser, maxUsersOnPage);
+
+            PageListModel<ShortUserInfoModel, string> pageList = new PageListModel<ShortUserInfoModel, string>(users, pageListScrolling, key);
+
+            return  View(pageList);
+        }
+
+        [HttpPost]
+        public IActionResult UserList(string key)
+        {
+            return RedirectToAction("userlist", "admin", new { key = key, page = 1});
         }
 
         [HttpGet]
@@ -133,5 +178,24 @@ namespace TrueStoryMVC.Controllers
             }
             return View(model);
         }
+
+        //public async Task<IActionResult> DeleteUser(string Name)
+        //{
+        //    try
+        //    {
+        //        User user = await _userManager.FindByNameAsync(Name);
+        //        if (user != null)
+        //        {
+        //            user.isEnable = false;
+        //            _userManager.
+        //        }
+        //        else
+        //            throw new Exception("Пользователь не найден");
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
+        //    }
+        //}
     }
 }

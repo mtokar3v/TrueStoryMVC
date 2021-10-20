@@ -1,14 +1,66 @@
-﻿@model IEnumerable<TrueStoryMVC.Models.User>
+﻿@model TrueStoryMVC.Models.ViewModels.PageListModel<TrueStoryMVC.Models.ViewModels.ShortUserInfoModel, string>
+
+<style>
+    td img{
+        width: 50px;
+        height:50px;
+    }
+</style>
 
 <h2>Список пользователей</h2>
-<table class="table">
-@foreach (var user in Model)
+
+<form asp-controller="admin" asp-action="userlist" class="mb-4">
+    <div class="form-group">
+        <input asp-action="userlist" asp-controller="admin" type="text" class="form-control" name="key"/>
+    </div>
+    <div>
+        <input type="submit" class="btn btn-primary btn-block" value="Поиск" />
+    </div>
+</form>
+
+
+@if (Model.ModelsOnCurrentPage != null)
 {
-    <tr>
-        <td>@user.Email</td>
-        <td>
-            <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-userid="@user.Id">Права доступа</a>
-        </td>
-    </tr>
-}
+<table class="table align-baseline">
+    @foreach (var user in Model.ModelsOnCurrentPage)
+    {
+        <tr>
+            <td class="p-0 align-middle">
+                <a asp-controller="Users" asp-action="UserPage" asp-route-userName="@user.UserName">
+                    @if (user.Avatar != null)
+                    {
+                        <img class="rounded-circle border ml-2" src="data:image/jpeg ;base64,@(Convert.ToBase64String(user.Avatar))" />
+                    }
+                    else
+                    {
+                        <img class="rounded-circle border ml-2" src="~/user_pic.jpg">
+                    }
+                </a>
+                </td>
+            <td><a asp-controller="Users" asp-action="UserPage" asp-route-userName="@user.UserName">@user.UserName</a></td>
+            <td>
+                <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-userid="@user.Id">Права доступа</a>
+            </td>
+        </tr>
+    }
 </table>
+}
+else
+{
+    <p>По запросу "@Model.Key" ничего не найдено</p>
+}
+
+@if (Model.PageListScrolling.canScrollNext())
+{
+<a asp-action="UserList" asp-route-page="@(Model.PageListScrolling.CurrentPage + 1)" asp-route-key="@Model.Key" class="btn btn-outline-dark">
+    <i class="glyphicon glyphicon-chevron-left"></i>
+    Вперед
+</a>
+}
+@if (Model.PageListScrolling.canScrollPrevious())
+{
+<a asp-action="UserList" asp-route-page="@(Model.PageListScrolling.CurrentPage - 1)" asp-route-key="@Model.Key" class="btn btn-outline-dark">
+    <i class="glyphicon glyphicon-chevron-right"></i>
+    Назад
+</a>
+}
