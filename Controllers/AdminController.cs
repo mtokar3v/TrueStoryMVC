@@ -28,31 +28,7 @@ namespace TrueStoryMVC.Controllers
             _signInManager = signInManager;
         }
 
-        public IActionResult Index() => View(_roleManager.Roles.ToList());
-
-        public IActionResult CreateRole() => View();
-
-        [HttpPost]
-        public async Task<IActionResult> CreateRole(string name)
-        {
-            if (!string.IsNullOrEmpty(name))
-            {
-                IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(name));
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                }
-            }
-            return View(name);
-        }
-
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> Delete(string id)
         {
@@ -64,6 +40,7 @@ namespace TrueStoryMVC.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<IActionResult> Edit(string UserId)
         {
@@ -88,6 +65,7 @@ namespace TrueStoryMVC.Controllers
             return NotFound();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> Edit(string userId, List<string> roles)
         {
@@ -105,15 +83,14 @@ namespace TrueStoryMVC.Controllers
 
                 return RedirectToAction("UserList");
             }
-
             return NotFound();
         }
 
-        [Authorize (Roles = "admin")]
+        [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<IActionResult> UserList(string key, int page = 1)
         {
-            int maxUsersOnPage = 2;
+            int maxUsersOnPage = 10;
 
             IQueryable<ShortUserInfoModel> source;
 
@@ -147,6 +124,7 @@ namespace TrueStoryMVC.Controllers
             return  View(pageList);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public IActionResult UserList(string key)
         {
@@ -171,7 +149,9 @@ namespace TrueStoryMVC.Controllers
                     User user = await _userManager.FindByNameAsync(model.Login);
                     if (!await _roleManager.RoleExistsAsync("admin"))
                         await _roleManager.CreateAsync(new IdentityRole("admin"));
-                    await _userManager.AddToRoleAsync(user, "admin");
+                    if(!await _userManager.IsInRoleAsync(user, "admin"))
+                        await _userManager.AddToRoleAsync(user, "admin");
+                    await _signInManager.RefreshSignInAsync(user);
                     return RedirectToAction("userlist", "admin");
                 }
                 ModelState.AddModelError("", "Неверный пароль");
@@ -179,23 +159,20 @@ namespace TrueStoryMVC.Controllers
             return View(model);
         }
 
-        //public async Task<IActionResult> DeleteUser(string Name)
-        //{
-        //    try
-        //    {
-        //        User user = await _userManager.FindByNameAsync(Name);
-        //        if (user != null)
-        //        {
-        //            user.isEnable = false;
-        //            _userManager.
-        //        }
-        //        else
-        //            throw new Exception("Пользователь не найден");
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-        //    }
-        //}
+        public async Task<IActionResult> DeleteUser(string Name)
+        {
+            try
+            {
+                User user = await _userManager.FindByNameAsync(Name);
+                if (user != null)
+                    await _userManager.DeleteAsync(user);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
+            }
+            return RedirectToAction("userlist", "admin");
+        }
+
     }
 }

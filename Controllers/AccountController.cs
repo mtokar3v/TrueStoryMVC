@@ -103,9 +103,9 @@ namespace TrueStoryMVC.Controllers
                 if (result.Succeeded)
                 {
                     User user = await _userManager.FindByNameAsync(model.Login);
-                    if (user != null && !user.isEnable)
-                        ModelState.AddModelError("", "Ваш аккаунт заблокирован");
-                    else
+                    //if (user != null && !user.isEnable)
+                    //    ModelState.AddModelError("", "Ваш аккаунт заблокирован");
+                    //else
                         return RedirectToAction("Hot", "Home");
                 }
                 else

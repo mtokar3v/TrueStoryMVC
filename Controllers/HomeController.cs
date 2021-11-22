@@ -45,6 +45,21 @@ namespace TrueStoryMVC.Controllers
                 {
                     try
                     {
+                        User user = null;
+                        if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
+                        {
+                            user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                            if (user != null)
+                            {
+                                MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
+                                opt.Priority = CacheItemPriority.High;
+                                _cache.Set(user.UserName, user, opt);
+                            }
+                        }
+
+                        if (user == null)
+                            return BadRequest();
+
                         Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name, Tags = postModel.TagsLine, Scheme = postModel.Scheme };
                         db.Posts.Add(post);
                         await db.SaveChangesAsync();
@@ -63,18 +78,6 @@ namespace TrueStoryMVC.Controllers
                             pic.Picture = builder.GetResult();
                             pic.PostId = post.Id;
                             db.Pictures.Add(pic);
-                        }
-
-                        User user = null;
-                        if (!_cache.TryGetValue(HttpContext.User.Identity.Name, out user))
-                        {
-                            user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                            if (user != null)
-                            {
-                                MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
-                                opt.Priority = CacheItemPriority.High;
-                                _cache.Set(user.UserName, user, opt);
-                            }
                         }
 
                         user.PostCount++;

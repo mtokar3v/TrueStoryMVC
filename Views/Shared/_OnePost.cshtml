@@ -63,12 +63,12 @@
 
                 foreach (var type in types)
                 {
-                    if (type == "text")
+                    if (type == "text" && Model.Texts.Count != 0)
                     {
                         <pre class=" text-justify w-100" style="padding: 0% 3% 2% 3%">@Model.Texts[textCounter++].TextData</pre>
                     }
 
-                    if (type == "image")
+                    if (type == "image" && Model.Pictures.Count != 0)
                     {
                         <img class="w-100 mx-auto img-fluid" src="data:image/jpeg ;base64,@(Convert.ToBase64String(Model.Pictures[imageCounter++].Picture.Data))" />
                     }

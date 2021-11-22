@@ -37,9 +37,6 @@ namespace TrueStoryMVC
                 options.SignIn.RequireConfirmedEmail = true;
             });
 
-
-            //services.AddDistributedMemoryCache();
-            //services.AddSession();
             services.AddControllersWithViews();
         }
 

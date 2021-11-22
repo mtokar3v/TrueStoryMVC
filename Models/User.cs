@@ -15,7 +15,6 @@ namespace TrueStoryMVC.Models
         public DateTime RegisterTime { get; set; }
         public List<User> Subscribers { get; set;}
         public List<Like> Likes { get; set; }
-        public bool isEnable { get; set; }
 
         public User()
         {
