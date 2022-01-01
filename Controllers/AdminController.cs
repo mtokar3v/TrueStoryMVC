@@ -16,10 +16,10 @@ namespace TrueStoryMVC.Controllers
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
-        private readonly ApplicationContext _db;
+        private readonly RootDb _db;
         private readonly ILogger<HomeController> _logger;
         private readonly SignInManager<User> _signInManager;
-        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, ApplicationContext dbContext, ILogger<HomeController> logger, SignInManager<User> signInManager)
+        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, RootDb dbContext, ILogger<HomeController> logger, SignInManager<User> signInManager)
         {
             _roleManager = roleManager;
             _userManager = userManager;

@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 
 namespace TrueStoryMVC.Models
 {
-    public class ApplicationContext: IdentityDbContext<User>
+    public class RootDb: IdentityDbContext<User>
     {
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
@@ -12,7 +11,7 @@ namespace TrueStoryMVC.Models
         public DbSet<Text> Texts { get; set; }
         public DbSet<Like> Likes { get; set; }
 
-        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
+        public RootDb(DbContextOptions<RootDb> options) : base(options)
         {
             //Database.EnsureDeleted();
             Database.EnsureCreated();
@@ -20,7 +19,9 @@ namespace TrueStoryMVC.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=truestorydb;Username=postgres;Password=1234;Database=postgres;Timeout=60;CommandTimeout=60;");
+            optionsBuilder
+                .UseLazyLoadingProxies()
+                .UseNpgsql("Host=localhost;Port=5432;Database=truestorydb;Username=postgres;Password=1234");
 
         }
     }

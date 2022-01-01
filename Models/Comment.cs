@@ -12,5 +12,6 @@ namespace TrueStoryMVC.Models
         public int Rating { get; set; }
         public DateTime PostTime { get; set; }
         public int PostId { get; set; }
+        public virtual User User { get; set; }
     }
 }

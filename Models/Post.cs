@@ -12,9 +12,9 @@ namespace TrueStoryMVC.Models
         public string Author { get; set; }
         public DateTime PostTime { get; set; }
         public string Tags { get; set; }
-        public List<Text> Texts { get; set; } = new List<Text>();
-        public List<Comment> comments { get; set; } = new List<Comment>();
-        public List<PostPicture> Pictures { get; set; } = new List<PostPicture>();
+        public virtual List<Text> Texts { get; set; } = new List<Text>();
+        public virtual List<Comment> comments { get; set; } = new List<Comment>();
+        public virtual List<PostPicture> Pictures { get; set; } = new List<PostPicture>();
         public string Scheme { get; set; }
     }
 }

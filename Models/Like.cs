@@ -10,10 +10,10 @@ namespace TrueStoryMVC.Models
         private byte likeType;
         public int Id { get; set; }
         public string UserId { get; set; }
-
-        //Внешние ключи
         public int PostId { get; set; }
         public int CommentId { get; set; }
+        public virtual Post Post { get; set; }
+        public virtual Comment Comment { get; set; }
 
         public byte LikeType
         {

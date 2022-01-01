@@ -11,23 +11,31 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
-using TrueStoryMVC.Services;
 using TrueStoryMVC.Builders;
+using WebApiLib.Interfaces.Repositories;
+using TrueStoryMVC.Services;
 
 namespace TrueStoryMVC.Controllers
 {
     public class HomeController : Controller
     {
-        private ApplicationContext db;
-        private IMemoryCache _cache;
+        private readonly RootDb _db;
+        private readonly IMemoryCache _cache;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<HomeController> _logger;
-        public HomeController(ApplicationContext dbContext, UserManager<User> userManager, ILogger<HomeController> logger, IMemoryCache cache)
+        private readonly IPostRepository _postRepository;
+        public HomeController(
+            RootDb dbContext,
+            UserManager<User> userManager,
+            ILogger<HomeController> logger,
+            IMemoryCache cache,
+            IPostRepository postRepository)
         {
             _logger = logger;
             _userManager = userManager;
-            db = dbContext;
+            _db = dbContext;
             _cache = cache;
+            _postRepository = postRepository;
         }
 
         [Authorize]
@@ -61,13 +69,13 @@ namespace TrueStoryMVC.Controllers
                             return BadRequest();
 
                         Post post = new Post { Header = postModel.Header, PostTime = DateTime.Now.ToUniversalTime(), Author = User.Identity.Name, Tags = postModel.TagsLine, Scheme = postModel.Scheme };
-                        db.Posts.Add(post);
-                        await db.SaveChangesAsync();
+                        _db.Posts.Add(post);
+                        await _db.SaveChangesAsync();
 
                         foreach (var t in postModel.Texts)
                         {
                             Text text = new Text { PostId = post.Id, TextData = t };
-                            db.Texts.Add(text);
+                            _db.Texts.Add(text);
                         }
 
                         foreach (var i in postModel.Images)
@@ -77,13 +85,13 @@ namespace TrueStoryMVC.Controllers
                             builder.SetData(i.ToArray());
                             pic.Picture = builder.GetResult();
                             pic.PostId = post.Id;
-                            db.Pictures.Add(pic);
+                            _db.Pictures.Add(pic);
                         }
 
                         user.PostCount++;
-                        db.Users.Update(user);
+                        _db.Users.Update(user);
 
-                        await db.SaveChangesAsync();
+                        await _db.SaveChangesAsync();
                         return Ok();
                     }
                     catch (Exception ex)
@@ -104,11 +112,11 @@ namespace TrueStoryMVC.Controllers
             {
                 try
                 {
-                    Post post = await db.Posts.FirstOrDefaultAsync(p => p.Id == id);
+                    Post post = await _db.Posts.FirstOrDefaultAsync(p => p.Id == id);
                     if (post != null)
                     {
-                        db.Posts.Remove(post);
-                        await db.SaveChangesAsync();
+                        _db.Posts.Remove(post);
+                        await _db.SaveChangesAsync();
                     }
                     else
                         return NotFound();
@@ -143,42 +151,49 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> GetPostBlock([FromBody] PostBlockInfo postBlock)
         {
-            const byte HOT = 0;
-            const byte BEST = 1;
-            const byte NEW = 2;
-            const byte TAGS = 3;
-            const byte USER = 4;
+            if (!ModelState.IsValid) return BadRequest();
 
-            List<Post> posts;
-            try
-            { 
-                IPostGetter postGetter = postBlock.PostBlockType switch
-                {
-                    HOT => new HotPostGetter(),
-                    BEST => new BestPostGetter(),
-                    NEW => new NewPostGetter(),
-                    TAGS => new TagsPostGetter(),
-                    USER => new UserPostGetter(),
-                    _ => throw new Exception("Неизвестный PostBlockType")
-                };
+            var posts = await _postRepository.GetPostsListAsync((DataItems.PostTypes)postBlock.PostBlockType, postBlock.Number, postBlock.Argument);
+            if (posts == null) return NotFound();
 
-                posts = await postGetter.GetPosts(db, postBlock).ToListAsync();
-
-                if (posts == null)
-                    return Ok();
-
-                foreach (var item in posts)
-                {
-                    await db.Texts.Where(i => i.PostId == item.Id).LoadAsync();
-                    await db.Pictures.Where(i => i.PostId == item.Id).LoadAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-                posts = null;
-            }
             return PartialView("_GetPosts", posts);
+            //const byte HOT = 0;
+            //const byte BEST = 1;
+            //const byte NEW = 2;
+            //const byte TAGS = 3;
+            //const byte USER = 4;
+
+            //List<Post> posts;
+            //try
+            //{
+            //    IPostGetter postGetter = postBlock.PostBlockType switch
+            //    {
+            //        HOT => new HotPostGetter(),
+            //        BEST => new BestPostGetter(),
+            //        NEW => new NewPostGetter(),
+            //        TAGS => new TagsPostGetter(),
+            //        USER => new UserPostGetter(),
+            //        _ => throw new Exception("Неизвестный PostBlockType")
+            //    };
+
+            //    posts = await postGetter.GetPosts(_db, postBlock).ToListAsync();
+
+            //    if (posts == null)
+            //        return Ok();
+
+            //    foreach (var item in posts)
+            //    {
+            //        await _db.Texts.Where(i => i.PostId == item.Id).LoadAsync();
+            //        await _db.Pictures.Where(i => i.PostId == item.Id).LoadAsync();
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
+            //    posts = null;
+            //}
+            //return PartialView("_GetPosts", posts);
+
         }
 
         [HttpPost]
@@ -199,9 +214,9 @@ namespace TrueStoryMVC.Controllers
                     MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
                     opt.Priority = CacheItemPriority.High;
                     _cache.Set(user.UserName, user, opt);
-                    db.Users.Update(user);
-                    db.Comments.Add(newComment);
-                    await db.SaveChangesAsync();
+                    _db.Users.Update(user);
+                    _db.Comments.Add(newComment);
+                    await _db.SaveChangesAsync();
 
                     return Ok();
                 }
@@ -231,8 +246,8 @@ namespace TrueStoryMVC.Controllers
 
                     Like _like = like.FromType switch
                     {
-                        FROM_POST => await db.Likes.FirstOrDefaultAsync(l => l.PostId == like.PostId && l.UserId == user.Id),
-                        FROM_COMMENT => await db.Likes.FirstOrDefaultAsync(l => l.CommentId == like.PostId && l.UserId == user.Id),
+                        FROM_POST => await _db.Likes.FirstOrDefaultAsync(l => l.PostId == like.PostId && l.UserId == user.Id),
+                        FROM_COMMENT => await _db.Likes.FirstOrDefaultAsync(l => l.CommentId == like.PostId && l.UserId == user.Id),
                         _ => throw new Exception("unknown like type")
                     };
 
@@ -247,16 +262,16 @@ namespace TrueStoryMVC.Controllers
                         else
                             throw new Exception("unknown post type");
 
-                        db.Likes.Add(_like);
-                        await db.SaveChangesAsync();
+                        _db.Likes.Add(_like);
+                        await _db.SaveChangesAsync();
                         result = _like.likeCalculate(1);
                     }
                     else if (_like.LikeType != like.LikeType)
                     {
                         _like.LikeType = like.LikeType;                       
                         result = _like.likeCalculate(2);
-                        db.Likes.Update(_like);
-                        await db.SaveChangesAsync();
+                        _db.Likes.Update(_like);
+                        await _db.SaveChangesAsync();
                     }
                     else
                         result = 0;
@@ -267,7 +282,7 @@ namespace TrueStoryMVC.Controllers
 
                         if (like.FromType == FROM_POST)
                         {
-                            Post post = await db.Posts.FindAsync(like.PostId);
+                            Post post = await _db.Posts.FindAsync(like.PostId);
 
 
                             author = await _userManager.FindByNameAsync(post.Author);
@@ -276,12 +291,12 @@ namespace TrueStoryMVC.Controllers
                             post.Rating += result;
                             author.Rating += result;
 
-                            db.Posts.Update(post);
-                            await db.SaveChangesAsync();
+                            _db.Posts.Update(post);
+                            await _db.SaveChangesAsync();
                         }
                         else if (like.FromType == FROM_COMMENT)
                         {
-                            Comment comment = await db.Comments.FindAsync(like.PostId);
+                            Comment comment = await _db.Comments.FindAsync(like.PostId);
 
 
                             author = await _userManager.FindByNameAsync(comment.Author);
@@ -289,14 +304,14 @@ namespace TrueStoryMVC.Controllers
 
                             comment.Rating += result;
                             author.Rating += result;
-                            db.Comments.Update(comment);
-                            await db.SaveChangesAsync();
+                            _db.Comments.Update(comment);
+                            await _db.SaveChangesAsync();
                         }
                         else
                             throw new Exception("unknown post type");
 
-                        db.Users.Update(author);
-                        await db.SaveChangesAsync();
+                        _db.Users.Update(author);
+                        await _db.SaveChangesAsync();
 
                         switch (result)
                         {
@@ -307,8 +322,8 @@ namespace TrueStoryMVC.Controllers
                         }
 
                         
-                        db.Users.Update(user);
-                        await db.SaveChangesAsync();
+                        _db.Users.Update(user);
+                        await _db.SaveChangesAsync();
                     }
                     return Json(new { result = result });
                 }
@@ -333,8 +348,8 @@ namespace TrueStoryMVC.Controllers
                     User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
                     Like like = _like.FromType switch
                     {
-                        FROM_POST => db.Likes.FirstOrDefault(l => l.PostId == _like.PostId && l.UserId == user.Id),
-                        FROM_COMMENT => db.Likes.FirstOrDefault(l => l.CommentId == _like.PostId && l.UserId == user.Id),
+                        FROM_POST => _db.Likes.FirstOrDefault(l => l.PostId == _like.PostId && l.UserId == user.Id),
+                        FROM_COMMENT => _db.Likes.FirstOrDefault(l => l.CommentId == _like.PostId && l.UserId == user.Id),
                         _ => throw new Exception("Неизвестный FromType")
                     };
 
@@ -355,10 +370,10 @@ namespace TrueStoryMVC.Controllers
             {
                 try
                 {
-                    Post post = await db.Posts.FindAsync(id);
-                    await db.Texts.Where(i => i.PostId == post.Id).LoadAsync();
-                    await db.Pictures.Where(i => i.PostId == post.Id).LoadAsync();
-                    await db.Comments.Where(c => c.PostId == post.Id).LoadAsync();
+                    Post post = await _db.Posts.FindAsync(id);
+                    await _db.Texts.Where(i => i.PostId == post.Id).LoadAsync();
+                    await _db.Pictures.Where(i => i.PostId == post.Id).LoadAsync();
+                    await _db.Comments.Where(c => c.PostId == post.Id).LoadAsync();
                     return View(post);
                 }
                 catch(Exception ex)

@@ -1,0 +1,36 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "cf4b724d-3534-4d21-995c-ca32b069c9cb": {
+      "ProjectGuid": "cf4b724d-3534-4d21-995c-ca32b069c9cb",
+      "DisplayName": "TrueStoryMVC",
+      "ColorIndex": 0
+    },
+    "974e1923-cc37-4961-a1b7-fbd86680d4a2": {
+      "ProjectGuid": "974e1923-cc37-4961-a1b7-fbd86680d4a2",
+      "DisplayName": "WebApiLib",
+      "ColorIndex": 1
+    },
+    "102e7132-f8ad-4525-8824-b0f217791760": {
+      "ProjectGuid": "102e7132-f8ad-4525-8824-b0f217791760",
+      "DisplayName": "WebApi",
+      "ColorIndex": 2
+    },
+    "e9f9863f-b7d1-4d06-92c3-708bbdd7309a": {
+      "ProjectGuid": "e9f9863f-b7d1-4d06-92c3-708bbdd7309a",
+      "DisplayName": "WebApi",
+      "ColorIndex": 3
+    },
+    "9b149b18-114f-488f-90f5-0ba220cc8016": {
+      "ProjectGuid": "9b149b18-114f-488f-90f5-0ba220cc8016",
+      "DisplayName": "DataItems",
+      "ColorIndex": 4
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Прочие файлы",
+      "ColorIndex": -1
+    }
+  },
+  "NextColorIndex": 5
+}

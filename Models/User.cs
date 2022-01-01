@@ -13,8 +13,8 @@ namespace TrueStoryMVC.Models
         public int DisLikeCount { get; set; }
         public Img Picture { get; set; }
         public DateTime RegisterTime { get; set; }
-        public List<User> Subscribers { get; set;}
-        public List<Like> Likes { get; set; }
+        public virtual List<User> Subscribers { get; set; } = new List<User>();
+        public virtual List<Like> Likes { get; set; } = new List<Like>();
 
         public User()
         {

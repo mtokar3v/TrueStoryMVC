@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using TrueStoryMVC.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
+using WebApiLib.Repositories;
+using WebApiLib.Interfaces.Repositories;
 
 namespace TrueStoryMVC
 {
@@ -21,8 +23,8 @@ namespace TrueStoryMVC
 
         public void ConfigureServices(IServiceCollection services)
         {
-            string connection = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(connection)) ;
+            var connection = Configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<RootDb>(options => options.UseNpgsql(connection)) ;
             services.AddIdentity<User, IdentityRole>(opts => {
                 opts.User.RequireUniqueEmail = true;
                 opts.User.AllowedUserNameCharacters =
@@ -31,13 +33,15 @@ namespace TrueStoryMVC
                 opts.Password.RequireUppercase = false;
                 opts.Password.RequiredLength = 6;
 
-            }).AddEntityFrameworkStores<ApplicationContext>().AddDefaultTokenProviders();
+            }).AddEntityFrameworkStores<RootDb>().AddDefaultTokenProviders();
             services.Configure<IdentityOptions>(options =>
             {
                 options.SignIn.RequireConfirmedEmail = true;
             });
 
             services.AddControllersWithViews();
+
+            services.AddScoped<IPostRepository, PostRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -58,7 +62,6 @@ namespace TrueStoryMVC
             }
 
             app.UseHttpsRedirection();
-            //app.UseSession();
 
             app.UseStaticFiles(new StaticFileOptions()
             {
