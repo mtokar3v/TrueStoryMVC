@@ -76,7 +76,7 @@
                             </svg>
                         </environment>   
                     </span>
-                    <span class="text-secondary"><a asp-action="userpage" asp-controller="users" asp-route-username="@com.Author">@com.Author</a></span>
+                    <span class="text-secondary"><a asp-action="userpage" asp-controller="users" asp-route-username="@com.Author()">@com.Author()</a></span>
                     <p-time post-time=@com.PostTime class="text-secondary ml-1" />
                     <pre class="mt-3 comment-text">@com.Text</pre>
                 </div>
@@ -92,7 +92,7 @@
     var Article = new FormData(this.event.target);
         if (!isBlank(Article.get('Text'))) {
             console.log(Article);
-            let url = uri + '/home/comment';
+            let url = uri + '/Content/MakeComment';
             let responce = await fetch(url, {
             method: "post",
             body: Article

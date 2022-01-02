@@ -1,100 +1,105 @@
 ﻿using TrueStoryMVC.Models;
 using DataItems;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System;
+using TrueStoryMVC.Interfaces.Repository;
 using System.Linq;
-using WebApiLib.Interfaces.Repositories;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
-namespace WebApiLib.Repositories
+namespace TrueStoryMVC.Repositories
 {
     public class PostRepository : IPostRepository
     {
-        private RootDb _db;
+        private readonly RootDb _db;
 
         public PostRepository(RootDb db)
         {
             _db = db;
         }
 
-        public async Task<List<Post>> GetPostsListAsync(PostTypes type, int number, string arg)
+        public async Task<Post> GetPostAsync(int id) => await _db.Posts.Where(p => p.Id == id).FirstOrDefaultAsync();
+
+        public async Task<List<Post>> GetPostsListAsync(PostType type, int number, string arg)
         {
             var posts = type switch
             {
-                PostTypes.HOT => GetHotPosts(number),
-                PostTypes.BEST => GetBestPosts(number),
-                PostTypes.NEW => GetNewPosts(number),
-                PostTypes.TAGS => GetTagsPosts(number, arg),
-                PostTypes.USER => GetUserPosts(number, arg),
+                PostType.HOT => await GetHotPosts(number),
+                PostType.BEST => await GetBestPosts(number),
+                PostType.NEW => await GetNewPosts(number),
+                PostType.TAGS => GetTagsPosts(number, arg),
+                PostType.USER => await GetUserPosts(number, arg),
                 _=>throw new Exception("Invalid post type")
             };
 
-            //foreach (var item in posts)
-            //{
-            //    var l = _db.Texts.Where(i => i.PostId == item.Id).Select(t=>t).ToList();
-            //    await _db.Pictures.Where(i => i.PostId == item.Id).LoadAsync();
-            //}
-
-            return posts.ToList();
+            return posts;
         }
 
         #region Private methods
         private int postListSize = 20;
 
-        private IQueryable<Post> GetHotPosts(int number)
+        private Task<List<Post>> GetHotPosts(int number)
         {
             return _db.Posts
                 .Where(t => t.PostTime.Day + 1 >= DateTime.UtcNow.Day && t.PostTime.Month == DateTime.UtcNow.Month && t.PostTime.Year == DateTime.UtcNow.Year)
                 .OrderByDescending(p => p.comments.Count)
                 .Skip(number * postListSize)
-                .Take(postListSize);
+                .Take(postListSize)
+                .ToListAsync();
         }
 
-        private IQueryable<Post> GetBestPosts(int number)
+        private Task<List<Post>> GetBestPosts(int number)
         {
             return _db.Posts
                 .Where(t => t.PostTime.Day + 1 >= DateTime.UtcNow.Day && t.PostTime.Month == DateTime.UtcNow.Month && t.PostTime.Year == DateTime.UtcNow.Year)
                 .OrderByDescending(p => p.Rating)
                 .Skip(number * postListSize)
-                .Take(postListSize);
+                .Take(postListSize)
+                .ToListAsync();
         }
 
-        private IQueryable<Post> GetNewPosts(int number)
+        private Task<List<Post>> GetNewPosts(int number)
         {
             return _db.Posts
                 .Where(t => t.PostTime.Day + 1 >= DateTime.UtcNow.Day && t.PostTime.Month == DateTime.UtcNow.Month && t.PostTime.Year == DateTime.UtcNow.Year)
                 .OrderByDescending(p => p.PostTime)
                 .Skip(number * postListSize)
-                .Take(postListSize);
+                .Take(postListSize)
+                .ToListAsync();
         }
 
-        //в post попадает только последний тег
-        private IQueryable<Post> GetTagsPosts(int number, string tags)
+        private List<Post> GetTagsPosts(int number, string tags)
         {
-            IQueryable<Post> posts = null;
+            var posts = new List<Post>();
 
             if (!string.IsNullOrEmpty(tags))
             {
-                string[] tagArray = tags.Split(new char[] { ' ', ',', ';' });
-                foreach (string s in tagArray)
+                var tagArray = tags.Split(new char[] { ' ', ',', ';' }).ToList();
+
+                tagArray.ForEach(async s => 
                 {
-                    posts = _db.Posts
-                        .Where(p => p.Tags.Contains(s))
-                        .Skip(number * postListSize)
-                        .Take(postListSize);
-                }
+                    var postWithTag = await _db.Posts
+                                         .Where(p => p.Tags.Contains(s))
+                                         .Skip(number * postListSize)
+                                         .Take(postListSize)
+                                         .Where(p => !posts.Contains(p))
+                                         .Select(p => p)
+                                         .ToListAsync();
+
+                    posts.AddRange(postWithTag);
+                });
             }
             return posts;
         }
 
-        private IQueryable<Post> GetUserPosts(int number, string user)
+        private Task<List<Post>> GetUserPosts(int number, string user)
         {
             return _db.Posts 
-                .Where(p => p.Author == user)
+                .Where(p => p.User.UserName == user)
                 .OrderByDescending(p => p.Rating)
                 .Skip(number * postListSize)
-                .Take(postListSize);
+                .Take(postListSize)
+                .ToListAsync();
         }
 
         
