@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using TrueStoryMVC.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
-using WebApiLib.Repositories;
-using WebApiLib.Interfaces.Repositories;
+using TrueStoryMVC.Interfaces.Repository;
+using TrueStoryMVC.Repositories;
 
 namespace TrueStoryMVC
 {
@@ -42,6 +42,8 @@ namespace TrueStoryMVC
             services.AddControllersWithViews();
 
             services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ISystemRepository, SystemRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TrueStoryMVC.Models.ViewModels
 {
-    public class CommentModel
+    public class CommentRequest
     {
+        [Required]
         public int PostId { get; set; }
+
+        [Required]
         public string Text { get; set; }
+
+        [Required]
         public byte CommentType { get; set; }
     }
 }

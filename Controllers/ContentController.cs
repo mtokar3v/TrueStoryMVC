@@ -1,0 +1,65 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using TrueStoryMVC.DataItems.Utils;
+using TrueStoryMVC.Interfaces.Repository;
+using TrueStoryMVC.Models.ViewModels;
+
+namespace TrueStoryMVC.Controllers
+{
+    public class ContentController : Controller
+    {
+        private readonly IPostRepository _postRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly ISystemRepository _systemRepository;
+        public ContentController(
+            IPostRepository postRepository,
+            IUserRepository userRepository,
+            ISystemRepository systemRepository)
+        {
+            _postRepository = postRepository;
+            _userRepository = userRepository;
+            _systemRepository = systemRepository;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetPosts([FromBody] PostRequest requset)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            var posts = await _postRepository.GetPostsListAsync(requset.PostBlockType, requset.Number, requset.Argument);
+            if (posts == null) return NotFound();
+
+            return PartialView("_GetPosts", posts);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> MakeComment([FromForm] CommentRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            var user = await _userRepository.GetUserAsync(User);
+            if (user == null) return NotFound(Failed.ToFindUser());
+
+            var post = await _postRepository.GetPostAsync(request.PostId);
+            if (post == null) return NotFound(Failed.ToFindPost(request.PostId));
+
+            await _systemRepository.CreateCommentAsync(request, user, post);
+            return Ok();
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Like([FromBody] LikeRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            var user = await _userRepository.GetUserAsync(User);
+            if (user == null) return NotFound(Failed.ToFindUser());
+
+            var likeCount = await _systemRepository.LikeAsync(request, user);
+            return Ok(new { result = likeCount });
+        }
+    }
+}

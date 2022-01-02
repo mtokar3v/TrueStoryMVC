@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TrueStoryMVC.Models;
 
-namespace WebApiLib.Interfaces.Repositories
+namespace TrueStoryMVC.Interfaces.Repository
 {
     public interface IPostRepository
     {
-        Task<List<Post>> GetPostsListAsync(PostTypes type, int number, string arg);
+        Task<Post> GetPostAsync(int id);
+        Task<List<Post>> GetPostsListAsync(PostType type, int number, string arg);
+
     }
 }

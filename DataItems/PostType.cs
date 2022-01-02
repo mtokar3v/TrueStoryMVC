@@ -1,6 +1,6 @@
 ﻿namespace DataItems
 {
-    public enum PostTypes 
+    public enum PostType : byte
     {
         HOT  = 0,
         BEST = 1,

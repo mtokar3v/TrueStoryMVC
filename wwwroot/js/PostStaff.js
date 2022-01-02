@@ -2,7 +2,7 @@
     //types:
     //FROM_POST = 0;
     //FROM_COMMENT = 1;
-    let url = uri + '/home/like';
+    let url = uri + '/Content/like';
     let responce = await fetch(url, {
         method: 'post',
         headers: {
@@ -122,7 +122,7 @@ async function CreateBlock(num, html, uri) {
 
 async function getPostBlock(type, arg, uri) {
     let num = document.getElementsByClassName('postBlock').length;
-    let url = uri + '/home/GetPostBlock';
+    let url = uri + '/Content/GetPosts';
     let responce = await fetch(url, {
         method: 'post',
         headers: {
