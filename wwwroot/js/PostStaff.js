@@ -96,9 +96,7 @@ async function ColorCommentLike(uri) {
     let div = document.getElementsByClassName('someComment');
     for (let i = 0; i < div.length; i++) {
         let commentId = (Number)(div[i].getAttribute('comment-id'));
-        console.log(commentId);
         let type = await checkLike(commentId, 1, uri);
-        console.log(type);
         if (type != null) {
             let rating = document.getElementById('comment-rating-' + commentId);
             if (type != 0) {
@@ -147,3 +145,18 @@ function isBlank(str) {
     return (str.length === 0 || !str.trim());
 }
 
+async function DeletePost(id, uri) {
+    let url = uri + '/Content/DeletePost';
+    let responce = await fetch(url, {
+        method: 'delete',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ Id: id })
+    });
+
+    if (responce.status == 200) {
+        window.location.reload();
+    }
+}
