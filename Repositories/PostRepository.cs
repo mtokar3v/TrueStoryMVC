@@ -35,6 +35,12 @@ namespace TrueStoryMVC.Repositories
             return posts;
         }
 
+        public async Task DeletePost(Post post)
+        {
+            _db.Posts.Remove(post);
+            await _db.SaveChangesAsync();
+        }
+
         #region Private methods
         private int postListSize = 20;
 

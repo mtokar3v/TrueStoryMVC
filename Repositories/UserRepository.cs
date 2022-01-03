@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using TrueStoryMVC.Extensions;
 using TrueStoryMVC.Interfaces.Repository;
 using TrueStoryMVC.Models;
 
@@ -15,5 +16,6 @@ namespace TrueStoryMVC.Repositories
         }
 
         public async Task<User> GetUserAsync(ClaimsPrincipal User) => await _userManager.GetUserAsync(User);
+        public bool HasAccessToDelete(ClaimsPrincipal principal) => principal.AtLeastAdmin();
     }
 }

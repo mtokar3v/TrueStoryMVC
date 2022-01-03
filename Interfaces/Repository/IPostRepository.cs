@@ -9,6 +9,7 @@ namespace TrueStoryMVC.Interfaces.Repository
     {
         Task<Post> GetPostAsync(int id);
         Task<List<Post>> GetPostsListAsync(PostType type, int number, string arg);
+        Task DeletePost(Post post);
 
     }
 }

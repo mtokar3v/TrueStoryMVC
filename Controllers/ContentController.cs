@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using TrueStoryMVC.DataItems.Utils;
+using TrueStoryMVC.DataItems.ViewModels;
 using TrueStoryMVC.Interfaces.Repository;
 using TrueStoryMVC.Models.ViewModels;
 
@@ -31,6 +32,26 @@ namespace TrueStoryMVC.Controllers
             if (posts == null) return NotFound();
 
             return PartialView("_GetPosts", posts);
+        }
+
+        [Authorize]
+        [HttpDelete]
+        public async Task<IActionResult> DeletePost([FromBody] DeletePostRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            var user = await _userRepository.GetUserAsync(User);
+            if (user == null) return NotFound(Failed.ToFindUser());
+
+            var post = await _postRepository.GetPostAsync(request.Id);
+            if (post == null) return NotFound(Failed.ToFindPost(request.Id));
+
+            if (post.User.Id != user.Id) 
+                if(_userRepository.HasAccessToDelete(User))
+                    return Forbid();
+
+            await _postRepository.DeletePost(post);
+            return Ok();
         }
 
         [HttpPost]

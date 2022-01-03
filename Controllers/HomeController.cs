@@ -101,30 +101,6 @@ namespace TrueStoryMVC.Controllers
             return BadRequest();
         }
 
-        [Authorize]
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id.HasValue)
-            {
-                try
-                {
-                    Post post = await _db.Posts.FirstOrDefaultAsync(p => p.Id == id);
-                    if (post != null)
-                    {
-                        _db.Posts.Remove(post);
-                        await _db.SaveChangesAsync();
-                    }
-                    else
-                        return NotFound();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-                }
-            }
-            return RedirectToAction("Hot");
-        }
-
         public IActionResult Hot()
         {
             return View();

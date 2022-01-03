@@ -14,6 +14,7 @@ namespace TrueStoryMVC.Models
         public virtual List<Text> Texts { get; set; } = new List<Text>();
         public virtual List<Comment> comments { get; set; } = new List<Comment>();
         public virtual List<PostPicture> Pictures { get; set; } = new List<PostPicture>();
+        public virtual List<Like> Likes { get; set; } = new List<Like>();
         public string Scheme { get; set; }
     }
 }

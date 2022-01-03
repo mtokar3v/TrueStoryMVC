@@ -7,5 +7,6 @@ namespace TrueStoryMVC.Interfaces.Repository
     public interface IUserRepository
     {
         Task<User> GetUserAsync(ClaimsPrincipal User);
+        bool HasAccessToDelete(ClaimsPrincipal principal);
     }
 }
