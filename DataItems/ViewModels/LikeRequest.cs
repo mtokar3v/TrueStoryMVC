@@ -6,7 +6,7 @@ namespace TrueStoryMVC.Models.ViewModels
     public class LikeRequest
     {
         [Required]
-        public int PostId { get; set; }
+        public int ContentId { get; set; }
 
         [Required]
         public LikeType LikeType { get; set; }

@@ -23,8 +23,8 @@ namespace TrueStoryMVC.Controllers
             _systemRepository = systemRepository;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> GetPosts([FromBody] PostRequest requset)
+        [HttpGet]
+        public async Task<IActionResult> GetPosts([FromQuery] PostRequest  requset)
         {
             if (!ModelState.IsValid) return BadRequest();
 
@@ -81,6 +81,19 @@ namespace TrueStoryMVC.Controllers
 
             var likeCount = await _systemRepository.LikeAsync(request, user);
             return Ok(new { result = likeCount });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> CheckLike([FromQuery] LikeRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            var user = await _userRepository.GetUserAsync(User);
+            if (user == null) return NotFound(Failed.ToFindUser());
+
+            var likeType = _systemRepository.CheckUserLikeType(request, user);
+            return Ok(new { result = likeType});
         }
     }
 }

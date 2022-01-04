@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using TrueStoryMVC.DataItems;
 using TrueStoryMVC.DataItems.Utils;
@@ -37,17 +38,29 @@ namespace TrueStoryMVC.Repositories
         {
             if (request.FromType == FromLikeType.FROM_POST)
             {
-                var post = await _postRepository.GetPostAsync(request.PostId);
+                var post = await _postRepository.GetPostAsync(request.ContentId);
+                if (post == null) return 0;
                 return await LikePostAsync(request, user, post);
             }
 
             if(request.FromType == FromLikeType.FROM_COMMENT)
             {
-                var comment = await GetCommentAsync(request.PostId);
+                var comment = await GetCommentAsync(request.ContentId);
+                if (comment == null) return 0;
                 return await LikeCommentAsync(request, user, comment);
             }
 
             throw new Exception(Error.UnknownEnum(nameof(FromLikeType)));
+        }
+
+        public LikeType CheckUserLikeType(LikeRequest request, User user)
+        {
+            return request.FromType switch
+            {
+                FromLikeType.FROM_POST => _db.Likes.FirstOrDefault(l => l.Post.Id == request.ContentId && l.User.Id == user.Id)?.LikeType ?? LikeType.NONE,
+                FromLikeType.FROM_COMMENT => _db.Likes.FirstOrDefault(l => l.Comment.Id == request.ContentId && l.User.Id == user.Id)?.LikeType ?? LikeType.NONE,
+                _ => throw new Exception(Error.UnknownEnum(nameof(FromLikeType)))
+            };
         }
 
         public async Task CreateCommentAsync(CommentRequest request, User user, Post post)
@@ -67,7 +80,7 @@ namespace TrueStoryMVC.Repositories
         #region Private methods
         private async Task<int> LikePostAsync(LikeRequest request, User user, Post post)
         {
-            var like = await GetLikeAsync(request.PostId, user.Id, request.FromType);
+            var like = await GetLikeAsync(request.ContentId, user.Id, request.FromType);
 
             if (like == null)
             {
@@ -102,7 +115,7 @@ namespace TrueStoryMVC.Repositories
 
         private async Task<int> LikeCommentAsync(LikeRequest request, User user, Comment comment)
         {
-            var like = await GetLikeAsync(request.PostId, user.Id, request.FromType);
+            var like = await GetLikeAsync(request.ContentId, user.Id, request.FromType);
 
             if (like == null)
             {

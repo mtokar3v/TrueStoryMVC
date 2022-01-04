@@ -120,32 +120,7 @@ namespace TrueStoryMVC.Controllers
             return View("Tag",SomeTags);
         }
 
-        
-        [HttpPost]
-        public async Task<JsonResult> CheckLike([FromBody] LikeRequest _like)
-        {
-            if (User.Identity.IsAuthenticated && _like != null)
-            {
-                try
-                {
-                    User user = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                    Like like = _like.FromType switch
-                    {
-                        FromLikeType.FROM_POST => _db.Likes.FirstOrDefault(l => l.Post.Id == _like.PostId && l.User.Id == user.Id),
-                        FromLikeType.FROM_COMMENT => _db.Likes.FirstOrDefault(l => l.Comment.Id == _like.PostId && l.User.Id == user.Id),
-                        _ => throw new Exception("Неизвестный FromType")
-                    };
-
-                    if (like != null)
-                        return Json(new { result = like.LikeType });
-                }
-                catch(Exception ex)
-                {
-                    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-                }
-            }
-            return Json(null);
-        }
+       
         [HttpGet]
         public async Task<IActionResult> Post(int? id)
         {

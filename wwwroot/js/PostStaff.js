@@ -1,15 +1,15 @@
-﻿async function like(button, type, postId, fromType, uri) {
+﻿async function like(button, type, contentId, fromType, uri) {
     //types:
     //FROM_POST = 0;
     //FROM_COMMENT = 1;
-    let url = uri + '/Content/like';
+    let url = `${uri}/Content/like`;
     let responce = await fetch(url, {
         method: 'post',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ PostId: postId, LikeType: type, FromType: fromType })
+        body: JSON.stringify({ ContentId: contentId, LikeType: type, FromType: fromType })
     });
 
     let json = await responce.json();
@@ -28,7 +28,7 @@
                 button.parentNode.previousElementSibling.previousElementSibling.firstElementChild.setAttribute('fill', 'currentColor');
             }
 
-            html = document.getElementById("post-rating-" + postId);
+            html = document.getElementById("post-rating-" + contentId);
         }
         else if (fromType == 1) {
 
@@ -42,7 +42,7 @@
                 button.parentNode.previousElementSibling.firstElementChild.setAttribute('fill', 'currentColor');
             }
 
-            html = document.getElementById("comment-rating-" + postId);
+            html = document.getElementById("comment-rating-" + contentId);
         }
         else
             return;
@@ -56,17 +56,9 @@
 }
 
 async function checkLike(id, fromType, uri) {
-    let url = uri + '/home/checkLike';;
-    let responce = await fetch(url, {
-        method: 'post',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ PostId: id, LikeType: 0, FromType: fromType })
-    });
-    let json = await responce.json();
-    return json == null ? null : json.result;
+    let url = `${uri}/Content/CheckLike?ContentId=${id}&FromType=${fromType}`;
+    let responce = await fetch(url);
+    return responce.status == 200 ? (await responce.json()).result : null;
 }
 
 async function ColorPostLike(serchElem, uri) {
@@ -89,7 +81,7 @@ async function ColorPostLike(serchElem, uri) {
     }
 }
 
-//нужно будет добавить совместимость с ветками комментариев
+//TO DO: make a comments branch support
 async function ColorCommentLike(uri) {
     const LIKE = 1;
     const DISLIKE = 2;
@@ -120,15 +112,9 @@ async function CreateBlock(num, html, uri) {
 
 async function getPostBlock(type, arg, uri) {
     let num = document.getElementsByClassName('postBlock').length;
-    let url = uri + '/Content/GetPosts';
-    let responce = await fetch(url, {
-        method: 'post',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ PostBlockType: type, Number: num, Argument: arg })
-    });
+    let url = `${uri}/Content/GetPosts?PostBlockType=${type}&Number=${num}&Argument=${arg}`;
+
+    let responce = await fetch(url);
 
     if (responce.json != null)
         await CreateBlock(num, await responce.text(), uri);
@@ -146,7 +132,7 @@ function isBlank(str) {
 }
 
 async function DeletePost(id, uri) {
-    let url = uri + '/Content/DeletePost';
+    let url = `${uri}/Content/DeletePost`;
     let responce = await fetch(url, {
         method: 'delete',
         headers: {
