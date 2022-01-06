@@ -29,7 +29,7 @@ namespace TrueStoryMVC.ValidationAttributes
         private bool AnyTextsHaveValue(IEnumerable<string> texts)
         {
             if (texts == null) return false;
-            return texts.Any(t => !string.IsNullOrEmpty(t));
+            return texts.Any(t => !string.IsNullOrWhiteSpace(t));
         }
 
         private bool AnyImageHaveValue(List<IEnumerable<byte>> images)
