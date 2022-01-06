@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
 namespace TrueStoryMVC.Models.ViewModels
 {
-    //это ужастно, но я пока не придумла чем можно заменить
-    public class OneImage
+    public class ChangeAvatarRequest
     {
+        [Required]
         public IEnumerable<byte> Data { get; set; }
     }
 }

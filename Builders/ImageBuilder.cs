@@ -21,8 +21,8 @@ namespace TrueStoryMVC.Builders
         {
             if (value == null) throw new Exception("Invalid image data");
 
-            using var reader = new MemoryStream(value);
-            using var image = Image.FromStream(reader);
+            using var streamIn = new MemoryStream(value);
+            using var image = Image.FromStream(streamIn);
                 
             //real value
             var width = image.Width;
@@ -38,9 +38,10 @@ namespace TrueStoryMVC.Builders
             _image.Height = height;
 
             using var bitmap = new Bitmap(image, width, height);
-            
-            bitmap.Save(reader, ImageFormat.Jpeg);
-            _image.Data = reader.ToArray();
+
+            using var streamOut = new MemoryStream();
+            bitmap.Save(streamOut, ImageFormat.Jpeg);
+            _image.Data = streamOut.ToArray();
 
             return this;
         }
@@ -49,8 +50,8 @@ namespace TrueStoryMVC.Builders
         {
             if (value == null) throw new Exception("Invalid image data");
 
-            using var reader = new MemoryStream(value);
-            using var image = Image.FromStream(reader);
+            using var streamIn = new MemoryStream(value);
+            using var image = Image.FromStream(streamIn);
 
             //real value
             var width = image.Width;
@@ -76,13 +77,14 @@ namespace TrueStoryMVC.Builders
                 new Rectangle(0, delta, _defaultSize, _defaultSize) : 
                 new Rectangle(delta, 0, _defaultSize, _defaultSize);
 
-            using Bitmap bitmap = new Bitmap(image, width, height) ;
-            using Bitmap rect_b = bitmap.Clone(cropCenterOfImage, bitmap.PixelFormat);
+            using var bitmap = new Bitmap(image, width, height) ;
+            using var rect_b = bitmap.Clone(cropCenterOfImage, bitmap.PixelFormat);
 
             _image.Height = _image.Width = _defaultSize;
-            rect_b.Save(reader, ImageFormat.Jpeg);
 
-            _image.Data = reader.ToArray();
+            using var streamOut = new MemoryStream();
+            rect_b.Save(streamOut, ImageFormat.Jpeg);
+            _image.Data = streamOut.ToArray();
 
             return this;
         }

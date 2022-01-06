@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using TrueStoryMVC.Builders;
 using TrueStoryMVC.Extensions;
 using TrueStoryMVC.Interfaces.Repository;
 using TrueStoryMVC.Models;
+using TrueStoryMVC.Models.ViewModels;
 
 namespace TrueStoryMVC.Repositories
 {
@@ -15,7 +18,16 @@ namespace TrueStoryMVC.Repositories
             _userManager = userManager;
         }
 
-        public async Task<User> GetUserAsync(ClaimsPrincipal User) => await _userManager.GetUserAsync(User);
+        public async Task<User> GetUserAsync(ClaimsPrincipal user) => await _userManager.GetUserAsync(user);
+        public async Task<User> GetUserAsync(string userName) => await _userManager.FindByNameAsync(userName);
+        public Task UpdateAvatar(ChangeAvatarRequest request, User user)
+        {
+            user.Picture = new ImageBuilder()
+                        .CreateSquareImage(request.Data.ToArray())
+                        .Build();
+
+            return _userManager.UpdateAsync(user);
+        }
         public bool HasAccessToDelete(ClaimsPrincipal principal) => principal.AtLeastAdmin();
     }
 }

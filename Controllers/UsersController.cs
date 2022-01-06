@@ -1,98 +1,64 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
 using TrueStoryMVC.Models;
 using TrueStoryMVC.Models.ViewModels;
 using TrueStoryMVC.Builders;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using Microsoft.Extensions.Logging;
+using TrueStoryMVC.Interfaces.Repository;
+using TrueStoryMVC.DataItems.Utils;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TrueStoryMVC.Controllers
 {
     public class UsersController : Controller
     {
-        UserManager<User> _userManager;
-        private IMemoryCache _cache;
-        private readonly ILogger<UsersController> _logger;
-        public UsersController(UserManager<User> userManager, IMemoryCache cache, ILogger<UsersController> logger)
+        private readonly IUserRepository _userRepository;
+        private readonly ISystemRepository _systemRepository;
+        public UsersController(
+            IUserRepository userRepository,
+            ISystemRepository systemRepository
+            )
         {
-            _userManager = userManager;
-            _cache = cache;
-            _logger = logger;
+            _systemRepository = systemRepository;
+            _userRepository = userRepository;
         }
-        public IActionResult Index() => View(_userManager.Users.ToList());
 
         [HttpGet]
         public async Task<IActionResult> UserPage(string userName)
         {
-            if (!string.IsNullOrEmpty(userName))
-            {
-                User user = new User();
-                user = await _userManager.FindByNameAsync(userName);
-                if (user != null)
-                    return View(user);
-                else
-                    return NotFound();
-            }
-            else
-                return RedirectToAction("hot");
+            if (string.IsNullOrEmpty(userName)) return BadRequest();
+
+            var user = await _userRepository.GetUserAsync(userName);
+            if (user == null) return NotFound(Failed.ToFindUser(userName));
+
+            return View(user);
         }
 
         [HttpPost]
-        public async Task UpdateAvatar([FromBody] OneImage image)
+        [Authorize]
+        public async Task<IActionResult> UpdateAvatar([FromBody] ChangeAvatarRequest request)
         {
-            if (User.Identity.IsAuthenticated && image.Data != null)
-            {
-                try
-                {
-                    User user = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (!ModelState.IsValid) return BadRequest();
 
-                    user.Picture = new ImageBuilder()
-                        .CreateSquareImage(image.Data.ToArray())
-                        .Build();
+            var user = await _userRepository.GetUserAsync(User);
+            if (user == null) return NotFound(Failed.ToFindUser());
 
-                    await _userManager.UpdateAsync(user);
-                }
-                catch(Exception ex)
-                {
-                    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-                }
-            }
+            await _userRepository.UpdateAvatar(request, user);
+            return Ok();
         }
 
-        [HttpPost]
-        public async Task<JsonResult> GetAvatar()
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetAvatar()
         {
-            byte[] data = null;
-            if (User.Identity.IsAuthenticated)
-            {
-                try
-                {
-                    if (!_cache.TryGetValue("Avatar_" + User.Identity.Name, out data))
-                    {
-                        string name = HttpContext.User.Identity.Name;
-                        User user = await _userManager.FindByNameAsync(name);
-                        data = user?.Picture?.Data;
+            var user = await _userRepository.GetUserAsync(User);
+            if (user == null) return NotFound(Failed.ToFindUser());
 
-                        if (data != null)
-                        {
-                            MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(12));
-                            opt.Priority = CacheItemPriority.High;
-                            _cache.Set("Avatar_" + User.Identity.Name, data, opt);
-                        }
-                    }
-                }
-                catch(Exception ex)
-                {
-                    if (_cache.Get("Avatar_" + User.Identity.Name) != null)
-                        _cache.Remove("Avatar_" + User.Identity.Name);
-                    _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-                    return Json(null);
-                }
-            }
-            return Json(new { data = data });
+            var avatar = user?.Picture?.Data ?? null;
+            return Ok(new { data = avatar });
         }
 
     }
