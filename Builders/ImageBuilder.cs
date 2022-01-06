@@ -6,119 +6,92 @@ using TrueStoryMVC.Models;
 
 namespace TrueStoryMVC.Builders
 {
-    public abstract class ImageBuilder
+    public class ImageBuilder
     {
-        public abstract void SetData(byte[] value);
-        public abstract Img GetResult();
-    }
+        private readonly Img _image;
 
-    public class RectImageBuilder : ImageBuilder
-    {
-        private Img img = new Img();
-        public override void SetData(byte[] value)
+        public ImageBuilder()
         {
-            if (value == null)
-                throw new Exception("Изобраение не передано");
-            using (var reader = new MemoryStream(value))
-            {
-                using (Image image = Image.FromStream(reader))
-                {
-                    const int _defaultWidth = 600;
-
-                    int w = image.Width;
-                    int h = image.Height;
-
-                    double k = (double)h / w;
-
-                    w = _defaultWidth;
-                    h = (int)(w * k);
-
-                    img.Width = w;
-                    img.Height = h;
-
-                    using (Bitmap b = new Bitmap(image, w, h))
-                    {
-                        using (var reader2 = new MemoryStream())
-                        {
-                            b.Save(reader2, ImageFormat.Jpeg);
-                            img.Data = reader2.ToArray();
-                        }
-                    }
-                }
-            }
+            _image = new Img();
         }
 
-        public override Img GetResult() => img;
-    }
+        public Img Build() => _image;
 
-    public class SquareImageBuilder : ImageBuilder
-    {
-        private Img img = new Img();
-        public override void SetData(byte[] value)
+        public ImageBuilder CreateRectangleImage(byte[] value)
         {
-            if (value == null)
-                throw new Exception("Изобраение не передано");
+            if (value == null) throw new Exception("Invalid image data");
 
-            using (var reader = new MemoryStream(value))
-            {
-                using (Image image = Image.FromStream(reader))
-                {
-                    const int _defaultSize = 250;
+            using var reader = new MemoryStream(value);
+            using var image = Image.FromStream(reader);
+                
+            //real value
+            var width = image.Width;
+            var height = image.Height;
+            var coefficient = (double)height / width;
 
-                    int w = image.Width;
-                    int h = image.Height;
+            //standart value
+            const int _defaultWidth = 600;
+            width = _defaultWidth;
+            height = (int)(width * coefficient);
 
-                    double k;
+            _image.Width = width;
+            _image.Height = height;
 
-                    if(w<h)
-                    {
-                        k = (double)h / w;
-                        w = _defaultSize;
-                        h = (int)(w * k);
-                    }
-                    else
-                    {
-                        k = (double)w / h;
-                        h = _defaultSize;
-                        w = (int)(h * k);
-                    }
+            using var bitmap = new Bitmap(image, width, height);
+            
+            bitmap.Save(reader, ImageFormat.Jpeg);
+            _image.Data = reader.ToArray();
 
-
-                    using (Bitmap b = new Bitmap(image, w, h))
-                    {
-                        int delta = Math.Abs(h - w) / 2;
-
-                        Rectangle cropCenterOfImage = w < h ? new Rectangle(0, delta, _defaultSize, _defaultSize) : new Rectangle(delta, 0, _defaultSize, _defaultSize);
-
-                        using (Bitmap rect_b = b.Clone(cropCenterOfImage, b.PixelFormat))
-                        {
-                            img.Height = img.Width = _defaultSize;
-
-                            using (var reader2 = new MemoryStream())
-                            {
-                                rect_b.Save(reader2, ImageFormat.Jpeg);
-                                img.Data = reader2.ToArray();
-                            }
-                        }
-                    }
-                }
-            }
+            return this;
         }
 
-        public override Img GetResult() => img;
+        public ImageBuilder CreateSquareImage(byte[] value)
+        {
+            if (value == null) throw new Exception("Invalid image data");
+
+            using var reader = new MemoryStream(value);
+            using var image = Image.FromStream(reader);
+
+            //real value
+            var width = image.Width;
+            var height = image.Height;
+
+            //standart value
+            const int _defaultSize = 250;
+
+            if (height > width)
+            {
+                CropImageToSquare(ref height, ref width, _defaultSize);
+            }
+            else
+            {
+                CropImageToSquare(ref width, ref height, _defaultSize);
+            }
+
+            _image.Width = width;
+            _image.Height = height;
+
+            var delta = Math.Abs(height - width) / 2;
+            var cropCenterOfImage = width < height ? 
+                new Rectangle(0, delta, _defaultSize, _defaultSize) : 
+                new Rectangle(delta, 0, _defaultSize, _defaultSize);
+
+            using Bitmap bitmap = new Bitmap(image, width, height) ;
+            using Bitmap rect_b = bitmap.Clone(cropCenterOfImage, bitmap.PixelFormat);
+
+            _image.Height = _image.Width = _defaultSize;
+            rect_b.Save(reader, ImageFormat.Jpeg);
+
+            _image.Data = reader.ToArray();
+
+            return this;
+        }
+
+        private void CropImageToSquare(ref int greatestSide, ref int smallestSide, int defaultSize)
+        {
+            var coefficient = (double)greatestSide / smallestSide;
+            smallestSide = defaultSize;
+            greatestSide = (int)(smallestSide * coefficient);
+        }
     }
-
-    //public class ImageConstructor
-    //{
-    //    private ImageBuilder _builder;
-    //    public ImageConstructor(ImageBuilder builder)
-    //    {
-    //        _builder = builder;
-    //    }
-
-    //    public void ConstructImage(byte[] value)
-    //    {
-    //        _builder.SetData(value);
-    //    }
-    //}
 }

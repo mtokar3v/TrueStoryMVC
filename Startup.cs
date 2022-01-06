@@ -81,7 +81,7 @@ namespace TrueStoryMVC
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Hot}/{id?}");
+                    pattern: "{controller=Content}/{action=Hot}/{id?}");
             });
         }
     }

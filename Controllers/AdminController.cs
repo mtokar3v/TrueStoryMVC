@@ -17,14 +17,16 @@ namespace TrueStoryMVC.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
         private readonly RootDb _db;
-        private readonly ILogger<HomeController> _logger;
         private readonly SignInManager<User> _signInManager;
-        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, RootDb dbContext, ILogger<HomeController> logger, SignInManager<User> signInManager)
+        public AdminController(
+            RoleManager<IdentityRole> roleManager,
+            UserManager<User> userManager,
+            RootDb dbContext,
+            SignInManager<User> signInManager)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _db = dbContext;
-            _logger = logger;
             _signInManager = signInManager;
         }
 
@@ -161,16 +163,11 @@ namespace TrueStoryMVC.Controllers
 
         public async Task<IActionResult> DeleteUser(string Name)
         {
-            try
-            {
-                User user = await _userManager.FindByNameAsync(Name);
-                if (user != null)
-                    await _userManager.DeleteAsync(user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-            }
+
+            User user = await _userManager.FindByNameAsync(Name);
+            if (user != null)
+                await _userManager.DeleteAsync(user);
+
             return RedirectToAction("userlist", "admin");
         }
 

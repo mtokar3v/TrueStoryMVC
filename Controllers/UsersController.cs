@@ -48,13 +48,10 @@ namespace TrueStoryMVC.Controllers
                 try
                 {
                     User user = await _userManager.FindByNameAsync(User.Identity.Name);
-                    ImageBuilder builder = new SquareImageBuilder();
-                    builder.SetData(image.Data.ToArray());
-                    user.Picture = builder.GetResult();
 
-                    MemoryCacheEntryOptions opt = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
-                    opt.Priority = CacheItemPriority.High;
-                    _cache.Set("Avatar_" + User.Identity.Name, image.Data, opt);
+                    user.Picture = new ImageBuilder()
+                        .CreateSquareImage(image.Data.ToArray())
+                        .Build();
 
                     await _userManager.UpdateAsync(user);
                 }

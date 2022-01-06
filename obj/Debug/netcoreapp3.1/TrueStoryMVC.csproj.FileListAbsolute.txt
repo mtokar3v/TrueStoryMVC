@@ -66,12 +66,6 @@ C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Admin\Index.cshtml.g.cs
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Admin\Login.cshtml.g.cs
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Admin\UserList.cshtml.g.cs
-C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Home\Add.cshtml.g.cs
-C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Home\Best.cshtml.g.cs
-C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Home\Hot.cshtml.g.cs
-C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Home\New.cshtml.g.cs
-C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Home\Post.cshtml.g.cs
-C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Home\Tag.cshtml.g.cs
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Shared\Error.cshtml.g.cs
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Shared\_GetPosts.cshtml.g.cs
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Shared\_Layout.cshtml.g.cs
@@ -82,3 +76,9 @@ C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\_ViewStart.cshtml.g.cs
 C:\Users\максимилиан\source\repos\TrueStoryMVC\bin\Debug\netcoreapp3.1\Castle.Core.dll
 C:\Users\максимилиан\source\repos\TrueStoryMVC\bin\Debug\netcoreapp3.1\Microsoft.EntityFrameworkCore.Proxies.dll
+C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Content\Best.cshtml.g.cs
+C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Content\Hot.cshtml.g.cs
+C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Content\New.cshtml.g.cs
+C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Content\Post.cshtml.g.cs
+C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Content\Tag.cshtml.g.cs
+C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Constructor\Add.cshtml.g.cs

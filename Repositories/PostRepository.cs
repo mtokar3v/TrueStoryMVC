@@ -6,6 +6,8 @@ using TrueStoryMVC.Interfaces.Repository;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using TrueStoryMVC.Models.ViewModels;
+using TrueStoryMVC.Extensions;
 
 namespace TrueStoryMVC.Repositories
 {
@@ -33,6 +35,29 @@ namespace TrueStoryMVC.Repositories
             };
 
             return posts;
+        }
+
+        public async Task CreatePost(PostModel model, User user)
+        {
+            var post = new Post
+            {
+                Header = model.Header,
+                Tags = model.TagsLine,
+                PostTime = DateTime.UtcNow,
+                Scheme = model.Scheme,
+                User = user
+            };
+
+            var entityTexts = post.AddTexts(model.Texts);
+            if (entityTexts != null) await _db.Texts.AddRangeAsync(entityTexts);
+
+            var entityImage = post.AddImages(model.Images);
+            if (entityImage != null) await _db.Pictures.AddRangeAsync(entityImage);
+
+            _db.Posts.Add(post);
+            user.PostCount++;
+
+            await _db.SaveChangesAsync();
         }
 
         public async Task DeletePost(Post post)

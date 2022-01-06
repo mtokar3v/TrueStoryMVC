@@ -51,7 +51,7 @@ async function sendData(uri) {
         let header = document.getElementById('header-input').value;
         let tagsline = document.getElementById('tags-input').value;
 
-        let url = uri + '/home/CreatePost';
+        let url = `${uri}/Constructor/CreatePost`;
 
         await fetch(url, {
             method: 'post',
@@ -60,7 +60,7 @@ async function sendData(uri) {
             },
             body: JSON.stringify({ Header: header, Texts: text, Images: images, TagsLine: tagsline, Scheme: scheme })
         });
-        window.location.href = uri+'/Home/Hot';
+        window.location.href = `${uri}/Content/Hot`;
     }
 }
 

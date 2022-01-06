@@ -23,6 +23,36 @@ namespace TrueStoryMVC.Controllers
             _systemRepository = systemRepository;
         }
 
+        public IActionResult Hot()
+        {
+            return View();
+        }
+
+        public IActionResult Best()
+        {
+            return View();
+        }
+
+        public IActionResult New()
+        {
+            return View();
+        }
+        public IActionResult Tag(string SomeTags)
+        {
+            return View("Tag", SomeTags);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Post(int? id)
+        {
+            if(!id.HasValue) return BadRequest(Error.InvalideRequest(nameof(id)));
+
+            var post = await _postRepository.GetPostAsync(id.Value);
+            if (post == null) return NotFound(Failed.ToFindPost(id.Value));
+
+            return View(post);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetPosts([FromQuery] PostRequest  requset)
         {
