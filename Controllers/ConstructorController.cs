@@ -26,6 +26,8 @@ namespace TrueStoryMVC.Controllers
             return View();
         }
 
+        [Authorize]
+        [HttpPost]
         public async Task<IActionResult> CreatePost([FromBody] PostModel postModel)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
