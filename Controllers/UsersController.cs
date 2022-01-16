@@ -1,12 +1,6 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using TrueStoryMVC.Models;
 using TrueStoryMVC.Models.ViewModels;
-using TrueStoryMVC.Builders;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using Microsoft.Extensions.Logging;
 using TrueStoryMVC.Interfaces.Repository;
 using TrueStoryMVC.DataItems.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -16,13 +10,8 @@ namespace TrueStoryMVC.Controllers
     public class UsersController : Controller
     {
         private readonly IUserRepository _userRepository;
-        private readonly ISystemRepository _systemRepository;
-        public UsersController(
-            IUserRepository userRepository,
-            ISystemRepository systemRepository
-            )
+        public UsersController(IUserRepository userRepository)
         {
-            _systemRepository = systemRepository;
             _userRepository = userRepository;
         }
 

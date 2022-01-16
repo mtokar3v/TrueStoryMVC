@@ -1,30 +1,28 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using TrueStoryMVC.Models;
+using TrueStoryMVC.DataItems.Utils;
+using TrueStoryMVC.Interfaces.Repositories;
+using TrueStoryMVC.Interfaces.Repository;
 using TrueStoryMVC.Models.ViewModels;
-using TrueStoryMVC.Services;
 
 namespace TrueStoryMVC.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly IMemoryCache _cache;
-        private readonly ILogger<AccountController> _logger;
+        private readonly IAccountRepository _accountRepository;
+        private readonly IUserRepository _userRepository;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IMemoryCache cache, ILogger<AccountController> logger)
+
+        public AccountController(
+            IAccountRepository accountRepository,
+            IUserRepository userRepository
+            )
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _cache = cache;
-            _logger = logger;
+            _accountRepository = accountRepository;
+            _userRepository = userRepository;
         }
+
         [HttpGet]
         public IActionResult Register()
         {
@@ -34,58 +32,28 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterUserModel model)
         {
-            if(ModelState.IsValid && model!=null)
-            {
-                User user = new User { UserName = model.Name, Email = model.Email };
-                IdentityResult result = await _userManager.CreateAsync(user, model.Password);
-                if(result.Succeeded)
-                {
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.Action(
-                       "ConfirmEmail",
-                        "Account", 
-                        new { userId = user.Id, code = code },
-                        HttpContext.Request.Scheme);
+            if (!ModelState.IsValid) return View(model);
 
-                    EmailService emailService = new EmailService();
-                    await emailService.SendEmailAsync(model.Email, "Confirm your account",
-                        $"Подтвердите регистрацию, перейдя по ссылке: <a href='{callbackUrl}'>link</a>");
+            var user = await _accountRepository.CreateUserAccount(model, ModelState);
+            if (user == null) return View(model);
 
-                    return Content("Для завершения регистрации проверьте электронную почту и перейдите по ссылке, указанной в письме");   
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                }
-                
-            }
-            return View(model);
+            await _accountRepository.SendConfimationMail(user, Url, HttpContext);
+            return Content("To complete the registration, check your email and follow the link provided in the letter");
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<IActionResult> ConfirmEmail(string userName, string code)
         {
-            if (userId == null || code == null)
-            {
-                return View("Error");
-            }
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return View("Error");
-            }
-            var result = await _userManager.ConfirmEmailAsync(user, code);
-            if (result.Succeeded)
-            {
-                await _signInManager.SignInAsync(user, true);
-                return RedirectToAction("Hot", "Home");
-            }
-            else
-                return View("Error");
+            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(code)) return BadRequest();
+
+            var user = await _userRepository.GetUserAsync(userName);
+            if (user == null) return NotFound();
+
+            var hasConfirmEmail = await _accountRepository.ConfirmEmail(user, code, ModelState);
+            if (!hasConfirmEmail) return View(user);
+
+            return RedirectToAction("Hot", "Content");
         }
 
         [HttpGet]
@@ -97,38 +65,31 @@ namespace TrueStoryMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginUserModel model)
         {
-            if(ModelState.IsValid && model != null)
+            if (!ModelState.IsValid) return View(model);
+            
+            var user = await _userRepository.GetUserAsync(model.Login);
+            if (user == null) 
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Login, model.Password, model.RememberMe, true);
-                if (result.Succeeded)
-                {
-                    User user = await _userManager.FindByNameAsync(model.Login);
-                    //if (user != null && !user.isEnable)
-                    //    ModelState.AddModelError("", "Ваш аккаунт заблокирован");
-                    //else
-                        return RedirectToAction("Hot", "Home");
-                }
-                else
-                    ModelState.AddModelError("", "Неправильный логин и (или) пароль");
+                ModelState.AddModelError("", Failed.ToFindUser(model.Login));
+                return View(model); 
+            };
+
+            var canSignIn = await _accountRepository.SignIn(user, model.Password, model.RememberMe);
+            if (!canSignIn)
+            {
+                ModelState.AddModelError("", Failed.ToSignIn());
+                return View(model);
             }
-            return View(model);
+
+            return RedirectToAction("Hot", "Content");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            try
-            {
-                if (_cache.Get("Avatar_" + User.Identity.Name) != null)
-                    _cache.Remove("Avatar_" + User.Identity.Name);
-                await _signInManager.SignOutAsync();
-            }
-            catch(Exception ex)
-            {
-                _logger.LogWarning("Time:{0}\tPath:{1}\tExeption:{2}", DateTime.UtcNow.ToLongTimeString(), HttpContext.Request.Path, ex.Message);
-            }
-            return RedirectToAction("Hot", "Home");
+            await _accountRepository.SignOut();
+            return RedirectToAction("Hot", "Content");
         }
     }
 }

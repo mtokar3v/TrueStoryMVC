@@ -1,23 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TrueStoryMVC.Models.ViewModels
 {
     public class LoginUserModel
     {
         [Required]
-        [Display(Name = "Логин")]
-        public string Login { get; set; } //passwordSingIn принимает в качестве первого аргумента string Name, что вообще то является логином
+        public string Login { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Пароль")]
         public string Password { get; set; }
 
-        [Display(Name = "Запомнить?")]
+        [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
     }
 }

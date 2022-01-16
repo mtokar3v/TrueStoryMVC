@@ -82,3 +82,4 @@ C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Content\Post.cshtml.g.cs
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Content\Tag.cshtml.g.cs
 C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Constructor\Add.cshtml.g.cs
+C:\Users\максимилиан\source\repos\TrueStoryMVC\obj\Debug\netcoreapp3.1\Razor\Views\Account\ConfirmEmail.cshtml.g.cs

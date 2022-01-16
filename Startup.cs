@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
 using TrueStoryMVC.Interfaces.Repository;
 using TrueStoryMVC.Repositories;
+using TrueStoryMVC.Interfaces.Repositories;
+using TrueStoryMVC.Interfaces.Services;
+using TrueStoryMVC.Services;
 
 namespace TrueStoryMVC
 {
@@ -44,6 +47,9 @@ namespace TrueStoryMVC
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISystemRepository, SystemRepository>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
+
+            services.AddScoped<IEmailService, EmailService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

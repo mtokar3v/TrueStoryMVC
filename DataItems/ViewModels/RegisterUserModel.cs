@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TrueStoryMVC.Models.ViewModels
 {
     public class RegisterUserModel
     {
-        [Required(ErrorMessage ="Введите Email")]
+        [Required(ErrorMessage ="Enter Email")]
+        [EmailAddress]
         public string Email { get; set; }
 
-        [Required(ErrorMessage ="Введите имя")]
+        [Required(ErrorMessage ="Enter userName")]
         public string Name { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Enter password")]
         [DataType(DataType.Password)]
-        [Display(Name = "Пароль")]
         public string Password { get; set; }
 
-        [Required]
-        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
+        [Required(ErrorMessage = "Enter password again")]
+        [Compare("Password", ErrorMessage = "Passwords has not compare")]
         [DataType(DataType.Password)]
-        [Display(Name = "Подтвердить пароль")]
+        [Display(Name = "Confirm a password")]
         public string PasswordConfirm { get; set; }
     }
 }

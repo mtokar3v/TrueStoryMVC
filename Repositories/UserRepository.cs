@@ -19,7 +19,8 @@ namespace TrueStoryMVC.Repositories
         }
 
         public async Task<User> GetUserAsync(ClaimsPrincipal user) => await _userManager.GetUserAsync(user);
-        public async Task<User> GetUserAsync(string userName) => await _userManager.FindByNameAsync(userName);
+        public async Task<User> GetUserAsync(string name) => await _userManager.FindByNameAsync(name);
+        public async Task<User> GetUserByIdAsync(string id) => await _userManager.FindByIdAsync(id);
         public Task UpdateAvatar(ChangeAvatarRequest request, User user)
         {
             user.Picture = new ImageBuilder()

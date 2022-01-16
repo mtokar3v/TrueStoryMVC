@@ -1,10 +1,11 @@
 ﻿using MimeKit;
 using MailKit.Net.Smtp;
 using System.Threading.Tasks;
+using TrueStoryMVC.Interfaces.Services;
 
 namespace TrueStoryMVC.Services
 {
-    public class EmailService
+    public class EmailService : IEmailService
     {
         public async Task SendEmailAsync(string email, string subject, string message)
         {

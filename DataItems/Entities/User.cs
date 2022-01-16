@@ -15,10 +15,5 @@ namespace TrueStoryMVC.Models
         public DateTime RegisterTime { get; set; }
         public virtual List<User> Subscribers { get; set; } = new List<User>();
         public virtual List<Like> Likes { get; set; } = new List<Like>();
-
-        public User()
-        {
-            RegisterTime = DateTime.UtcNow;
-        }
     }
 }
